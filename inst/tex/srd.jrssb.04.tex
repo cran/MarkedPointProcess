@@ -1,0 +1,119 @@
+\def\path{/your.path/tmp.ps/}
+\def\texpath{/your.path/tmp.tex/}
+\def\additive{additive-2}
+\def\variance{variance-2}
+\def\nn{nn-2}
+
+
+\documentclass[10pt]{article}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\textwidth=16.6truecm
+\textheight=24.8truecm
+\hoffset=-2.2truecm
+\voffset=-3truecm
+
+\def\1{{\mathbb I}}
+\def\const{\hbox{\rm const}}
+\def\D{{\,\rm d}}
+\def\EE{\mathop{E}\nolimits}
+\def\mid{|}
+\def\NN{{\mathbb  N}}
+\def\RR{{\mathbb  R}}
+\def\ZZ{{\mathbb Z}}
+\def\bold#1{{\bf #1}}
+
+
+\begin{document}
+
+\begin{table}
+\input \texpath\additive.1.tex 
+\end{table}
+
+\begin{table}
+\input \texpath\variance.3.tex
+\end{table}
+
+\begin{table}
+\input \texpath\nn.2.tex
+\end{table}
+
+
+\def\FigOOO#1{
+  \label{fig:#1}
+   Dependency of the mean rejection rate from the portion $\alpha$
+   for the random coin model.
+   The Gaussian random field has
+  exponential covariance function and scale $s=0.05$;
+  the simulations are based on $n=100$ points.
+  Left: ``$E(h)=\const$''; right: ``$V(h)=\const$'';
+  top: $R=0.05$; bottom: $R=0.1$.
+  Each figure gives the performances for all six cross-combinations of 
+  tests using the $l_1$ or the $l_\infty$ norm ($\Box$ and $\times$,
+  respectively)
+  and one of the set of 
+  weights $w^{(i)}_3$,   $w^{(i)}_5$, or $w^{(i)}_7$ (dashed line, solid,
+  dotted, respectively).
+}
+ \begin{figure}
+ \begin{center}
+  \includegraphics[width=6.7cm]{\path\additive 
+    .FALSE.TRUE.TRUE.exponential.exponential.5.5.100.E.95.eps}
+  \includegraphics[width=6.7cm]{\path\additive 
+    .FALSE.TRUE.TRUE.exponential.exponential.5.5.100.V.95.eps}\\[-0mm]
+  \includegraphics[width=6.7cm]{\path\additive
+    .FALSE.TRUE.TRUE.exponential.exponential.10.5.100.E.95.eps} 
+  \includegraphics[width=6.7cm]{\path\additive
+    .FALSE.TRUE.TRUE.exponential.exponential.10.5.100.V.95.eps}  
+ \caption{\FigOOO{simu.E}}
+ \end{center}
+\end{figure}
+
+
+\def\FigOOOO#1{Data sets: (a) Coulissenhieb, the diameters of the
+ stems are enlarged by a factor of 5; (b) Gus Pearson,
+ the symbols \raise -3pt\hbox{\huge $\cdot$}, $\circ$, 
+ {\tiny$\bigtriangleup$}, $+$,
+ $\bullet$, 
+  represent $0-50$, $50-100$, $100-150$, $150-200$ and $>200 {\;\rm
+ cm}^2$ of growth, respectively.\label{fig:#1}}
+\begin{figure}
+(a) \includegraphics[width=13cm]{\path coulissenhieb.eps}\\
+(b) \includegraphics[width=13cm]{\path biondi.etal.eps}
+\vspace*{2mm}
+
+\caption{\FigOOOO{data.plot}}
+\end{figure}
+
+\def\FigOne#1{Gus Pearson data set: dots: empirical variogram; black curve:
+ variogram model; dashed lines: 95\% confidence bounds \label{fig:#1}}
+\begin{figure}
+ \hfil \includegraphics[height=3.3cm]{\path
+   biondi.etal.confidence.gamma.eps}\hfill 
+ \caption{\FigOne{confidence}}
+\end{figure}
+
+\def\FigO#1{ Characterising functions of the
+ data after transformation of the marks to marginally
+ Gaussian variables;
+ $\bigtriangleup$: Coulissenhieb, $\bullet$: Gus Pearson, 
+ (a) $\hat E$, (b) $\hat V$, (c) $\hat \gamma$ and Mat\'ern model
+ fitted by maximum likelihood
+ \label{fig:#1}}
+\begin{figure}
+  \hbox{(a) \includegraphics[height=4.4cm]{\path data.E.eps} 
+    (b) \includegraphics[height=4.4cm]{\path data.V.eps}
+    (c) \includegraphics[height=4.4cm]{\path data.G.eps}}
+  \caption{\FigO{data.EVG}}
+\end{figure}
+
+% last table missing
+\clearpage
+
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
