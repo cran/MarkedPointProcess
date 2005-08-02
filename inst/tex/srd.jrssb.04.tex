@@ -1,8 +1,10 @@
-\def\path{/your.path/tmp.ps/}
-\def\texpath{/your.path/tmp.tex/}
+\def\path{ps/}
+\def\texpath{tex/}
 \def\additive{additive-2}
 \def\variance{variance-2}
 \def\nn{nn-2}
+\def\incl{\vspace*{2cm}}
+\def\incl{\includegraphics}
 
 
 \documentclass[10pt]{article}
@@ -79,7 +81,7 @@
  cm}^2$ of growth, respectively.\label{fig:#1}}
 \begin{figure}
 (a) \includegraphics[width=13cm]{\path coulissenhieb.eps}\\
-(b) \includegraphics[width=13cm]{\path biondi.etal.eps}
+(b) \incl[width=13cm]{\path biondi.etal.eps}
 \vspace*{2mm}
 
 \caption{\FigOOOO{data.plot}}
@@ -88,7 +90,7 @@
 \def\FigOne#1{Gus Pearson data set: dots: empirical variogram; black curve:
  variogram model; dashed lines: 95\% confidence bounds \label{fig:#1}}
 \begin{figure}
- \hfil \includegraphics[height=3.3cm]{\path
+ \hfil \incl[height=3.3cm]{\path
    biondi.etal.confidence.gamma.eps}\hfill 
  \caption{\FigOne{confidence}}
 \end{figure}

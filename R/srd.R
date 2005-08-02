@@ -582,7 +582,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
               print (cbind(.mpp.maxtests, s, r))
             }
           }
-          Dev(FALSE, dev)
+          Dev(FALSE)
           if (is.numeric(dev) && !is.null(ps)) rl(filename)
         } ## p
       } ## i
@@ -838,7 +838,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
         plotWithCircles(cbind(simu[[r]]$coord, 
                               0.3+simu[[r]]$data - min(simu[[r]]$data)), 
                         xlim=xlim, ylim=ylim, factor=0.01) # factor
-        Dev(FALSE, dev)
+        Dev(FALSE)
         if (is.numeric(dev)) rl(filename)
       }
     }
@@ -899,7 +899,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     plotWithCircles(cbind(x$coord, r), 
                     xlim=range(x$coord[, 1]), ylim=range(x$coord[, 2])
                     )
-    Dev(FALSE, dev)
+    Dev(FALSE)
     if (is.numeric(dev)) rl(filename)
 
      
@@ -960,7 +960,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
             col=c("black","black","black","black"), ylim=c(0.5, 1.1),
             pch=c(NA, NA, NA, 16), lty=c(2, 1, 2, 0),
             type=c("l", "l", "l", "p"), xlab="distance", ylab=expression(gamma))
-    Dev(FALSE, dev)
+    Dev(FALSE)
     
     return(list(data=x, analyse=y, plots=z, b=b))
   } # data.basics
@@ -1015,7 +1015,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                lty=sapply(ALL, function(x) x$lty), 
                cex=1.4)
       if (is.numeric(dev)) rl(filename)
-      Dev(FALSE, dev)
+      Dev(FALSE)
     }
   } # plotdata
 
@@ -1060,7 +1060,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     lines(x1, coin.E(x=x1, lambda=lambda, R=R), lty=theo.ltyE)
     x1 <- seq(1.000001, 2.8, len=50)
     lines(x1, coin.E(x=x1, lambda=lambda, R=R), lty=theo.ltyE)
-    Dev(FALSE, dev)
+    Dev(FALSE)
     
     var.E <- function(x, lambda=1, R=1, d=2) rep(0, length(x))
     var.V <- function(x, lambda=1, R=1, d=2) {
@@ -1091,7 +1091,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     lines(x1, var.V(x=x1, lambda=lambda, R=R), lty=theo.ltyV)
     x1 <- seq(1.000001, 2.8, len=50)
     lines(x1, var.V(x=x1, lambda=lambda, R=R), lty=theo.ltyV)
-    Dev(FALSE, dev)
+    Dev(FALSE)
     
     nn.E <- function(x, lambda) {
       res <-  rep( 1 / (2 * sqrt(lambda)), length(x))
@@ -1163,7 +1163,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     points(0, nn.E(0, lambda=lambda), pch=theo.pchE, cex=1.5)
     points(0, nn.V(0, lambda=lambda), pch=theo.pchV, cex=1.5)
     points(0, nn.G(0, lambda=lambda), pch=theo.pchG, cex=1.5)
-    Dev(FALSE, dev)
+    Dev(FALSE)
   }
 
   #########################################
@@ -1710,7 +1710,8 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     f[3] <- paste("\\def\\additive{", simu.models$add$file, "}", sep="")
     f[4] <- paste("\\def\\variance{", simu.models$var$file, "}", sep="")
     f[5] <- paste("\\def\\nn{", simu.models$nn$file, "}", sep="")
-    if (f[6]!="") stop("damaged tex file")
+    if (is.null(biondi.etal)) f[7] <- ""
+    if (f[8]!="") stop("damaged tex file")
     if (file.exists(texfile))
       warning(paste("LaTeX file '", texfile, "' has be overwritten", sep=""))
     write(file=texfile, f)
@@ -1747,12 +1748,14 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
 
     switch(input[1], 
            {
-             if (!(50 %in% simu.individ.list))
-               cat("not considered in the summaries, hence jumped\n")
+             if (!(50 %in% simu.individ.list)) 
+               cat("'", items[input[1]],
+                   "' jumped since not considered in the summaries\n")
              else worksheet.add(i=50, w=repet)
            }, {
              if (!(50 %in% simu.individ.list))
-               cat("not considered in the summaries, hence jumped\n")
+               cat("'", items[input[1]],
+                   "' jumped not considered in the summaries\n")
              else worksheet.add(i=50, model=simu.models$var, w=repet)
            }, { #3
              worksheet.add(i=100, w=repet)
@@ -1760,11 +1763,13 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
              worksheet.add(i=100, model=simu.models$var, w=repet)
            }, {
              if (!(50 %in% simu.individ.list))
-               cat("not considered in the summaries, hence jumped\n")
+               cat("'", items[input[1]],
+                   "' jumped since not considered in the summaries\n")
              else worksheet.add(i=200, w=repet)
            }, { #6
              if (!(50 %in% simu.individ.list))
-               cat("not considered in the summaries, hence jumped\n")
+               cat("'", items[input[1]],
+                   "' jumped since not considered in the summaries\n")
              else worksheet.add(i=200, model=simu.models$var, w=repet)
            }, {
              worksheet.nn(w=repet)

@@ -96,15 +96,16 @@ srd.jrssb(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE,
 }
 
 \examples{
-%library(MarkedPointProcess)
+% library(MarkedPointProcess, lib="~/TMP"); 
 # repet=2 is for demonstration of functionality
 # repet=50 gives more reliable results
 # repet=500 and final=TRUE have been used in the simulation study
   
 printlevel <- 1 + !interactive()
-srd.jrssb(input=if(!interactive()) c(1:14,0), repet=2, dev=TRUE,
+srd.jrssb(input=if(!interactive()) c(1:2,0), repet=2, dev=TRUE,
           final=FALSE, Pr=printlevel)
 }
 \keyword{spatial}
 
 
+% library(RandomFields, lib="~/TMP"); Dev(TRUE,TRUE,ps="xx");plot(1,1);Dev(FALSE)
