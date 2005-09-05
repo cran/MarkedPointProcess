@@ -74,7 +74,7 @@ if (FALSE)
   p <- 0.8;bin <- c(-1,seq(0,1.2,l=15));npoints <- 20
   NEW  <-  FALSE
   if (NEW) {
-    x  <- simulate.mpp(npoints=npoints, coordrepet=n, window=c(0,1,0,1),
+    x  <- simulateMPP(npoints=npoints, coordrepet=n, window=c(0,1,0,1),
                        coordmod="unif", repetitions=rep, edgecorrection=0,
                        gauss.method="exponen", gauss.parameter=c(0,1,0,1))
     data  <-  list(); for (i in 1:length(x)) data  <-  c(data,x[[i]]) 

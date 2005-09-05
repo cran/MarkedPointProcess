@@ -1,21 +1,23 @@
-# find . -name "*.Rd" -exec ./x {} \; 
+# find . -name "*.Rd" -exec ../man/x {} \; 
 
 echo $1
-sed s/"code{\\\link"/"command{\\\link"/ $1 > xx
-mv xx $1
-sed s/"code{\\\link"/"command{\\\link"/ $1 > xx
-mv xx $1
-sed s/"code{\\\link"/"command{\\\link"/ $1 > xx
+sed s/"simulate.mpp"/"simulateMPP"/ $1 > xx
 mv xx $1
 
-sed s/"command{\\\link{RandomFields"/"code{\\\link{RandomFields"/ $1 > xx
-mv xx $1
 
-sed s/"command{\\\link{SoPhy"/"code{\\\link{SoPhy"/ $1 > xx
-mv xx $1
+#sed s/"code{\\\link"/"command{\\\link"/ $1 > xx
+#mv xx $1
+#sed s/"code{\\\link"/"command{\\\link"/ $1 > xx
+#mv xx $1
 
-sed s/"command{\\\link{MarkedPointPr"/"code{\\\link{MarkedPointPr"/ $1 > xx
-mv xx $1
+#sed s/"command{\\\link{RandomFields"/"code{\\\link{RandomFields"/ $1 > xx
+#mv xx $1
+
+#sed s/"command{\\\link{SoPhy"/"code{\\\link{SoPhy"/ $1 > xx
+#mv xx $1
+
+#sed s/"command{\\\link{MarkedPointPr"/"code{\\\link{MarkedPointPr"/ $1 > xx
+#mv xx $1
 
 
 

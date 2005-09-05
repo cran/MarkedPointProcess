@@ -43,7 +43,7 @@ splitmodel(model)
 
 \author{Martin Schlather, \email{schlath@hsu-hh.de}
   \url{http://www.unibw-hamburg.de/WWEB/math/schlath/schlather.html}}
-\seealso{\command{\link{simulate.mpp}} }
+\seealso{\command{\link{simulateMPP}} }
 
 \examples{
 str(splitmodel(list(list(model="exp", var=5, scale=3))))

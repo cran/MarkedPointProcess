@@ -97,7 +97,7 @@ splitmodel <- function(model) {
   return(list(RF=RF,mpp=mpp))
 }
 
-simulate.mpp <- function(coordmodel=c("given", "uniform", "Poisson"),
+simulateMPP <- function(coordmodel=c("given", "uniform", "Poisson"),
                          coord=NULL, npoints=NULL, lambda=NULL,
                          window=NULL, edgecorrection=0,
                          repetitions=1, coordrepet=1, model=NULL,
@@ -192,7 +192,7 @@ simulate.mpp <- function(coordmodel=c("given", "uniform", "Poisson"),
        as.integer(PrintLevel),
        error, PACKAGE="MarkedPointProcess", DUP=FALSE)
 
-    if (error!=0) stop(paste("Error in simulate.mpp", error))
+    if (error!=0) stop(paste("Error in simulateMPP", error))
     ## IMPORTANT! if coordmodel is 2, then actual and physical act.npoints do
     ## not match; however matching is needed in the following steps
 

@@ -306,7 +306,7 @@ mpp.characteristics(bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
 }
 \author{Martin Schlather, \email{schlath@hsu-hh.de}
   \url{http://www.unibw-hamburg.de/WWEB/math/schlath/schlather.html}}
-\seealso{\command{\link{rfm.test}}, \command{\link{simulate.mpp}} }
+\seealso{\command{\link{rfm.test}}, \command{\link{simulateMPP}} }
 
 \examples{
 %    library(MarkedPointProcess, lib="~/TMP")

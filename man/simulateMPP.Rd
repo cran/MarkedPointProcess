@@ -1,11 +1,11 @@
-\name{simulate.mpp}
-\alias{simulate.mpp}
+\name{simulateMPP}
+\alias{simulateMPP}
 \title{Simulation of marked point processes}
 \description{
-  \code{simulate.mpp} generates realisations of marked point processes
+  \code{simulateMPP} generates realisations of marked point processes
 }
 \usage{
-simulate.mpp(coordmodel=c("given", "uniform", "Poisson"),
+simulateMPP(coordmodel=c("given", "uniform", "Poisson"),
              coord=NULL, npoints=NULL, lambda=NULL,
              window=NULL,  edgecorrection=0.0,
              repetitions=1, coordrepet=1, model=NULL,
@@ -92,12 +92,12 @@ simulate.mpp(coordmodel=c("given", "uniform", "Poisson"),
 %\references{}
 \author{Martin Schlather, \email{schlath@hsu-hh.de}
   \url{http://www.unibw-hamburg.de/WWEB/math/schlath/schlather.html}}
-\seealso{\command{\link{rfm.test}}, \command{\link{simulate.mpp}},
+\seealso{\command{\link{rfm.test}}, \command{\link{simulateMPP}},
   \command{\link{splitmodel}}, \link{MarkedPointProcess}}
 
 \examples{
  xlim <- c(0, if (interactive()) 200 else 20)
- mpp <- simulate.mpp(coordmodel="Poisson", lambda=1,
+ mpp <- simulateMPP(coordmodel="Poisson", lambda=1,
               window=c(xlim=xlim, ylim=c(20, 70)),
               repet=3, coordrepet=4,
               model=list(list(model="exp", var=1, scale=10),

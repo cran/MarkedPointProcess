@@ -256,7 +256,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
       }
       if (saving && FileExists(filename)) next
       
-      data <- simulate.mpp(coord=coord, npoints=npoints, lambda=lambda,
+      data <- simulateMPP(coord=coord, npoints=npoints, lambda=lambda,
                            coordmodel=coordmodel, window=window,
                            repetitions=repetitions,edgecorrection=edgecorrection,
                            coordrepet=coordrepet, model=model(variance),

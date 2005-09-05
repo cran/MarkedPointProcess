@@ -208,7 +208,7 @@ rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
 }
 \author{Martin Schlather, \email{schlath@hsu-hh.de}
   \url{http://www.unibw-hamburg.de/WWEB/math/schlath/schlather.html}}
-\seealso{\command{\link{mpp.characteristics}}, \command{\link{simulate.mpp}} }
+\seealso{\command{\link{mpp.characteristics}}, \command{\link{simulateMPP}} }
 
 \examples{}
 \keyword{spatial}% at least one, from doc/KEYWORDS

@@ -38,6 +38,6 @@ get.mpp.names()
 }
 \author{Martin Schlather, \email{schlath@hsu-hh.de}
   \url{http://www.unibw-hamburg.de/WWEB/math/schlath/schlather.html}}
-\seealso{ \command{\link{simulate.mpp}} }
+\seealso{ \command{\link{simulateMPP}} }
 
 \keyword{spatial}

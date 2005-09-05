@@ -91,7 +91,7 @@ srd.jrssb(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE,
 \author{Martin Schlather, \email{schlath@hsu-hh.de}
   \url{http://www.unibw-hamburg.de/WWEB/math/schlath/schlather.html}}
 
-\seealso{ \command{\link{rfm.test}}, \command{\link{simulate.mpp}},
+\seealso{ \command{\link{rfm.test}}, \command{\link{simulateMPP}},
   \code{\link{MarkedPointProcess}}
 }
 

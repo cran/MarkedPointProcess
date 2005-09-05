@@ -81,7 +81,7 @@ MPPcontrol <- function (individ=50, lambda =50, coord=NULL,
       v <- seq(0,0,l=numberbins)
       repet <- seq(0,0,l=numberbins)
       print("start simu")
-      simu <- simulate.mpp(coord=coord, npoints=npoints, repetitions=repetitions,
+      simu <- simulateMPP(coord=coord, npoints=npoints, repetitions=repetitions,
                            coordmodel=coordmodel, window=c(xlim, ylim),
                            edgecorrection=if (edgecorrection) edgecor else 0,
                            lambda=lambda,

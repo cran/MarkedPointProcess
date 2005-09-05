@@ -20,7 +20,7 @@
      model where the marks are independent of the locations (however the
      random field model allows that the marks themselves are spatially
      dependent) 
-     \item \command{\link{simulate.mpp}} : simulation of marked point
+     \item \command{\link{simulateMPP}} : simulation of marked point
      processes
      \item \command{\link{srd.jrssb}} : function that generates the results
      published by Schlather, Ribeiro, Diggle (2004)

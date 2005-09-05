@@ -303,8 +303,8 @@ Delta <- function(data, col, rep, bin, p=0.8, n=NULL, npoints=NULL,
   ## bin : "variogram" bin
   ## ADDITIONAL PARAMETERS FOR SIMULATION
   ## n : number of species
-  ## npoints : (maximal) number of locations, see simulate.mpp
-  ## coordmodel, see simulate.mpp
+  ## npoints : (maximal) number of locations, see simulateMPP
+  ## coordmodel, see simulateMPP
   ## R : not NULL : Delta$R expected
   ## C : not NULL : Delta$C expected
   ##
@@ -321,7 +321,7 @@ Delta <- function(data, col, rep, bin, p=0.8, n=NULL, npoints=NULL,
   pos.variance <- TRUE
   if (is.null(data)) {
     R <- C <- NULL;
-    x <- simulate.mpp(npoints=npoints, coordrepet=n, window=window,
+    x <- simulateMPP(npoints=npoints, coordrepet=n, window=window,
                       lambda=lambda, edgecorrection=edgecorrection,
                       coordmodel=coordmodel, repetitions=rep*col,
                       model = list(list(model=cov.model, var=1, scale=1)) )
@@ -447,8 +447,8 @@ DeltaMC <- function(data=NULL, rep, bin, n, MCrep,
   ## bin : "variogram" bin
   ## n : n-variate data
   ## ADDITIONAL PARAMETERS FOR SIMULATION
-  ## npoints : (maximal) number of locations, see simulate.mpp
-  ## coordmodel, see simulate.mpp
+  ## npoints : (maximal) number of locations, see simulateMPP
+  ## coordmodel, see simulateMPP
   ## R : not NULL : Delta$R expected
   ## C : not NULL : Delta$C expected
   ##
@@ -475,7 +475,7 @@ DeltaMC <- function(data=NULL, rep, bin, n, MCrep,
   if (DEBUG) cat("simulate...")
   if (is.null(data)) {
     data <-
-      simulate.mpp(npoints=npoints, coordrepet=n, window=window,
+      simulateMPP(npoints=npoints, coordrepet=n, window=window,
                    edgecorrection=edgecorrection, lambda=lambda,
                    coordmodel=coordmodel, repetitions=rep,
                    model = list(list(model=model,  var=1, scale=1)) )

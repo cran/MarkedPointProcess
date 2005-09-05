@@ -31,7 +31,7 @@ sill <- 0.8
 
 simu <- function(repet, MCrep) {
   if (repet==1) stop(" at least 2")
-  x <- simulate.mpp(npoints=individ ,coordmodel="unif", window=c(xlim,ylim),
+  x <- simulateMPP(npoints=individ ,coordmodel="unif", window=c(xlim,ylim),
                     edgecorrection = radius, repetitions=1, coordrepet=repet,
                     model=list(list(model="spherical", var=sill, scale=0.1),
                       "+",

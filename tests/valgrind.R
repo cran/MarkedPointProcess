@@ -9,7 +9,7 @@ if (FALSE)
     example(BITOEK)
     example(mpp.characteristics)
     example(rfm.test)
-    example(simulate.mpp)
+    example(simulateMPP)
     example(splitmodel)
     example(srd)
     
