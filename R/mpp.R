@@ -59,7 +59,10 @@ splitmodel <- function(model) {
   op.list <- c("+","*")
   model.names <- get.mpp.names()
   all.names <- c(model.names, GetModelNames())
-  
+
+  trend <- model$trend
+  mean <- model$mean
+  model$trend <- model$mean <- NULL
   if (any(is.na(sapply(model, function(x) {
                         ifelse(is.null(x$m), pmatch(x, op.list),
                               pmatch(x$m, all.names)) }))))
@@ -94,6 +97,8 @@ splitmodel <- function(model) {
       mpp[[i]] <- list(model=model[[i]]$m, param=model[[i]]$p, mnr=n[i])
     }
   }
+  if (!is.null(mean)) RF$mean <- mean
+  if (!is.null(trend)) RF$trend <- trend  
   return(list(RF=RF,mpp=mpp))
 }
 

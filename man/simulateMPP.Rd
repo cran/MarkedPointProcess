@@ -49,7 +49,9 @@ simulateMPP(coordmodel=c("given", "uniform", "Poisson"),
   \item{coordrepet}{number of independent drawing of the coordinates;
     this parameter is ignored in case of \code{coordmodel="given"}}
   
-  \item{model}{list of lists; model for the marks; see Details}
+  \item{model}{list of lists; model for the marks; see Details
+    and \command{\link{get.mpp.names}}.
+  }
   
   \item{register}{the register where intermediate results in the
     Gaussian random field simulation are stored, see
@@ -82,7 +84,7 @@ simulateMPP(coordmodel=c("given", "uniform", "Poisson"),
 \value{
   \code{coordrepet==1}\cr
   the function returns \code{list(coord, data)},
-  data contains the independent drawing of the marks are stored (as
+  \code{data} contains the independent drawing of the marks (as
   columns)\cr
   
   \code{coordrepet>1}\cr
@@ -92,8 +94,10 @@ simulateMPP(coordmodel=c("given", "uniform", "Poisson"),
 %\references{}
 \author{Martin Schlather, \email{schlath@hsu-hh.de}
   \url{http://www.unibw-hamburg.de/WWEB/math/schlath/schlather.html}}
-\seealso{\command{\link{rfm.test}}, \command{\link{simulateMPP}},
-  \command{\link{splitmodel}}, \link{MarkedPointProcess}}
+\seealso{\command{\link{get.mpp.names}},
+  \command{\link{rfm.test}}, \command{\link{simulateMPP}},
+  \command{\link{splitmodel}}, \link{MarkedPointProcess}
+}
 
 \examples{
  xlim <- c(0, if (interactive()) 200 else 20)

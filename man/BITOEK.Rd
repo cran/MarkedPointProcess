@@ -17,13 +17,11 @@
   stem diameters. The third component, \code{author},
   gives a short description of the data set.
 }
-\describe{
+\details{
   Both forests can be found in the the North of Bavaria, Germany;
   \sQuote{Steigerwald} is a forest near Bamberg, \sQuote{Coulissenhieb}
   is in the \sQuote{Fichtelgebirge}.
 }
-%\details{
-%}
 \source{
   The data were collected by Pedro Gerstberger,
   BITOEK, \url{http://www.bitoek.uni-bayreuth.de},

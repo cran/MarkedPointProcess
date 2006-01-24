@@ -6,6 +6,6 @@ mpp.characteristics     Characteristics of the marks of a marked point
                         process
 rfm.test                MC test on random field model
 simulateMPP             Simulation of marked point processes
-splitmodel              Split betweem marked point processes and
-                        random fields
+splitmodel              Split betweem marked point processes and random
+                        fields
 srd                     Simulation study for marked point processes

@@ -4,7 +4,7 @@ library(MarkedPointProcess,
         lib=if (file.exists("/home/schlather/TMP/MarkedPointProcess"))
         "~/TMP")
 
-.path <- "/home/schlather/R/MPP/MarkedPointProcess/R/"
+.path <- "~/R/MPP/MarkedPointProcess/R/"
 if (EXTENDED.TESTING <- file.exists(paste(.path, "mpp.R", sep=""))) {
 #
 
