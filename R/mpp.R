@@ -566,6 +566,13 @@ mpp.characteristics <- function(bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
   colsum2 <- (n*col)*(n*col+1)/2
 
 
+  for (i in ((1:n)*2)) {
+    args[[i]] <- as.matrix(args[[i]])
+    if ( !(all(apply(args[[i]], 2, var, na.rm=TRUE) != 0)) ) {
+      stop("data set seems to be a trivial one")
+    }
+  }
+
   if (normalize) {
     norm <- function(x) {
       idx <- is.finite(x)
@@ -576,18 +583,13 @@ mpp.characteristics <- function(bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
       ## originally not only for each species and each variable, but also
       ## also for each repetition separately:
       ##
-      args[[i]]  <- apply(as.matrix(args[[i]]),2,norm)
+      args[[i]]  <- apply(args[[i]], 2, norm)
       ##
       ## now repetetions are put together
       ## note: apply(...,1,norm) transforms matrix at the same time!
     }
   }
-  for (i in ((1:n)*2))
-    if (!(all(apply(args[[i]], 2, var, na.rm=TRUE)!=0))) {
-      print(args[[i]])
-      stop("data set seems to be a trivial one")
-    }
-  
+    
   if (is.null(bin)) {
     ## choose maximal distance as max bin end,
     ## number of bins = min <- species(#indiviuals) / 5
