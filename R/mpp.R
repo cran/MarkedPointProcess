@@ -226,10 +226,9 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
                        param=c(mean=0,variance=NA,nugget=0,scale=NA)),
                      method=NULL,
                      bin=c(-1,seq(0,1.2,l=15)),
-                     Ebin=seq(0,1,0.01),
                      MCregister=1,
                      n.hypo=1000,
-                     pvalue=c(90, 95, 99),
+                     pvalue=c(10, 5, 1),
                      tests="l1 & w3",
                      tests.lp=NULL, tests.weight=NULL,
                      Barnard=FALSE,
@@ -237,6 +236,10 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
                      ...
                      )
 {
+  if (any(idx <- pvalue > 50)) {
+    warning("old definition of the pvalue has beccome obsolete. 100 - pvalue is here used instead")
+    pvalue <- 100 - pvalue
+  }
   old.rf <- RFparameters()[c("Storing", "PrintLevel")]
   on.exit({if (!old.rf$Storing) DeleteRegister(MCregister);
            RFparameters(old.rf)})
@@ -245,7 +248,6 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
   stopifnot(n.hypo>1)
   if (PrepareModel(MCmodel)$anisotropy)
     stop("anisotropic models are not allowed (yet)")
-  Ebin.orig <- Ebin
   ## coord : coordinates
   ##         NULL  : full information is given by data==list(list(coord,data))
   ##         matrix: single data=marks set to analyse
@@ -254,24 +256,21 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
   ##         list(list(coord,data)), but then length(data)==1, necessarily.
   ## normalize: should the data be normalizes first?
   ## MCrepet : number of simulations the MC-test is based on
-  ## MCmodel : model is form of a list or double list, see CovarianceFct
+  ## MCmodel : model is a list or double list, see CovarianceFct
   ##           [[ param : c(mean,variance,nugget,scale,further.parameters).
   ##              The ones that are NULL are estimated ]]
   ## sill  : if not NA, variance and nugget must be NA and the relation
   ##         variance+nugget=sill holds
   ## bin : bins for the "variograms"
   ##       excludes left margin and includes right margin of the bin
-  ## Ebin: bins for the results
-  ##       includes left margin and excludes right margin of the bin
-  ##            Ebin helps to store the number of simulations that have
-  ##               statistics below the given data set as percentage of
-  ##            (repetitions+1)
   ##
   ## Barnard : the permutation test by Barnard & Besag/Diggle
 
   ## if additive a table is returned with MCrepet + 1 columns
   ## else E/VAR/SD-test values normed to 100 (so as if MCrepet was 99) are
   ##      returned
+
+  ## fitvario takes most of the time!
 
   distrNr <- as.integer(pmatch("Gauss", GetDistributionNames()) - 1) 
   ## maybe others will be allowed in future
@@ -321,15 +320,13 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
 
   data <- lapply(data, function(x) list(coord=x$coord, data=as.matrix(x$data)))
   additive <- length(data)>1 || ncol(data[[1]]$data) > 1  
-  if (!additive || length(Ebin) <= 1) Ebin <- c(0,1)
+  lEbinM1 <-  as.integer(if (additive) MCrepetitions + 1 else 1)
   
-  lEbinM1 <- as.integer(length(Ebin)) - 1
   Etest <- integer(lEbinM1 * .mpp.tests)
   VARtest <- integer(lEbinM1 * .mpp.tests)
   SQtest <- integer(lEbinM1 * .mpp.tests) ###
   MAXtest <- integer(lEbinM1 * .mpp.nr.maxtests) ###
   error <- integer(1)
-  stopifnot(all(Ebin<=1), all(Ebin>=0))
 
   norm <- function(x) {
     idx <- is.finite(x)
@@ -346,33 +343,38 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
     
     for (i in 1:ncol(Data)) {
       idx <- !is.na(Data[, i])
-      est[[i]] <- fitvario(x=data[[r]]$coord[idx,], y=NULL, z=NULL, T=NULL,
-                           data=Data[idx,i], mle.methods="ml",
-                           model=MCmodel, cross.methods=NULL,...)$variogram$ml
+      x <- data[[r]]$coord[idx, , drop=FALSE]
+      d <- Data[idx, i]
+      ld <- length(d)
+
+      est[[i]] <- fitvario(x=x, y=NULL, z=NULL, T=NULL,
+                           data=d, mle.methods="ml",
+                           model=MCmodel, cross.methods=NULL, ...)$variogram$ml
+      
       if (MCrepetitions>0) {     
         simu <- if (Barnard) {
-          Data[sample(nrow(Data), size=nrow(Data) * MCrepetitions,
-                      replace=TRUE), i]
+          d[sample(ld, size=ld * MCrepetitions, replace=TRUE)]
         } else {
-          GaussRF(x=data[[r]]$coord, grid=FALSE, model=est[[i]],
+          GaussRF(x=x, grid=FALSE, model=est[[i]],
                   method=method, register=MCregister, n=MCrepetitions)
         }
         storage.mode(simu) <- "double"
        
         # if (PrintLevel>3) cat("Barnard-Besag-Diggle test on no correlation among marks (between marks and locations)!\n");
 
+        
         .C("MCtest",  ## achtung! MCtest auch in tests/CHECK.R verwendet !
            as.integer(MCrepetitions),	
-           as.double(data[[r]]$coord),
-           as.double(Data[,i]),
-           as.integer(nrow(Data)),
-           as.integer(ncol(data[[r]]$coord)),
+           as.double(x),
+           as.double(d),
+           as.integer(ld),
+           as.integer(ncol(x)),
            simu,
            as.integer(PrintLevel),
            as.double(bin),     ## bins for the E & V functions
            as.integer(length(bin)-1),
-           as.double(Ebin),    ## bins for the ranks of the tests (in percent)
-           as.integer(lEbinM1),
+#           as.double(Ebin),    ## bins for the ranks of the tests (in percent)
+#           as.integer(lEbinM1),
            Etest,
            VARtest,
            SQtest,  ###
@@ -397,79 +399,59 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
     reject.null <- list()
     if (!is.null(pvalue)) {
       stopifnot(length(pvalue) > 0)
-      Etest <- Etest * 100 / (MCrepetitions + 1)
-      VARtest <- VARtest * 100 / (MCrepetitions + 1)
-      SQtest <- SQtest * 100 / (MCrepetitions + 1)
       data.sl <- list(Etest, VARtest, SQtest)
      
-      ## first: determination of significance level for the null model
-      Data <- as.matrix(data[[1]]$data) ## sicher ist sicher
-      idx <- !is.na(Data[,i])           ## dito
-      if (normalize) Data <- norm(Data) ## dito
-      simu.data <- GaussRF(x=data[[r]]$coord[idx,], grid=FALSE, model=est[[1]],
+      idx <- !is.na(data[[1]]$data[, 1])          
+      x <- data[[r]]$coord[idx, , drop=FALSE]
+      simu.data <- GaussRF(x=x, grid=FALSE, model=est[[1]],
                            method=method, n=n.hypo, register=MCregister)
-      simu.data <- rbind(simu.data, matrix(NA, ncol=n.hypo, nrow=sum(!idx)))
+                           
       null.hypo <-
-        rfm.test(
-                 coord = rbind(data[[r]]$coord[idx, ], data[[r]]$coord[!idx, ]),
+        rfm.test(coord = x,
                  data=simu.data,
                  normalize=normalize,
                  MCrepetitions = MCrepetitions, MCmodel = MCmodel,
                  method=method,
-                 bin = bin,  Ebin = Ebin.orig,
+                 bin = bin, 
                  MCregister = MCregister,
                  pvalue=NULL, ## otherwise risk of endless loop
                  tests="all",
                  PrintLevel=PrintLevel,...
                  )
 
-      ## significance level of the null hypothesis for given pvalue
-      tests <- rep(.mpp.tests, length(data.sl))
-      factor <- list();
-      for (i in 1:length(data.sl)){ ## E, Var, SQ: keep ordering in return below
-        rate <- apply(null.hypo[[i]], 2, cumsum) ## each column of null.hypo[[i]]
+      ## significance level of the null hypothesis for given pvalue     
+      for (i in 1:length(data.sl)) { #E, Var, SQ: keep ordering in return below
+        rate <- apply(null.hypo[[i]], 2, cumsum) #each column of null.hypo[[i]]
         ## contains the number of simulations where the null.sl of
         ## the simulated data set among the MC test simulations has been
         ## n, n=1,...,100 (if 100 MC test simulations have been performed)
         ## and the the matrix null.hypo[[i]] has 100 rows
-        rate <- 1-rate/rate[nrow(rate),1] ## [nrow(rate),*] gives the number
-        ##              of data sets simulated under the null.hypo hypothesis   
-        null.sl[[i]] <- matrix(nrow=length(pvalue), ncol=tests[i])
-        factor[[i]] <- matrix(nrow=length(pvalue), ncol=tests[i])
+        
+        null.sl[[i]] <- matrix(nrow=length(pvalue), ncol=.mpp.tests)
         for (p in 1:length(pvalue)) {
-          null.sl[[i]][p,] <- apply(rate>1-pvalue[p]/100,2,sum)
-          for (z in 1:tests[i]) { ## improve the null.sl value by
-            ## linear interpolation of the two neighbouring null.sls close
-            ## to the required pvalue
-            if (null.sl[[i]][p,z]>0)
-              factor[[i]][p,z] <-
-                (rate[1+null.sl[[i]][p,z],z]-(1-pvalue[p]/100))/
-                  (rate[1+null.sl[[i]][p,z],z]-rate[null.sl[[i]][p,z],z])
-            else {
-              if (PrintLevel>2) cat("null.sl is zero at (",i,",",p,",",z,")\n")
-              stopifnot(is.na(factor[[i]][p,z]))
-            }
-          }
+          abspvalue <- (1 - pvalue[p] / 100) * n.hypo
+          null.sl[[i]][p,] <- apply(rate <= abspvalue, 2, sum) + 1 #
         }
-        null.sl[[i]] <-
-          (null.sl[[i]] + 1 - factor[[i]]) * 100 / (MCrepetitions + 1)
    
         ## second: comparison with the estimated significance levels for the data
-        reject.null[[i]] <-
-          null.sl[[i]] <= rep(data.sl[[i]], each=length(pvalue))
+        reject.null[[i]] <- null.sl[[i]] <= rep(data.sl[[i]], eac=length(pvalue))
         
         dimnames(null.sl[[i]]) <- dimnames(reject.null[[i]]) <-
           list(pvalue, .mpp.testnames)
         reject.null[[i]] <- reject.null[[i]][, users.tests, drop=FALSE]
         null.sl[[i]] <- null.sl[[i]][, users.tests, drop=FALSE]
+
+        if (any(null.sl[[i]] == 1))
+          warning("strange result: null.sl equals 1 somewhere")
+        if (any(null.sl[[i]] > n.hypo) && PrintLevel > 1)
+          print("estimated position for p-value in null hypothesis exceeds position given by 'pvalue' by leading to imprecise results (",i,",",p,",",z,") -- increase MCrepetitions!\n")
       }
-      names(null.sl) <- c("E", "VAR", "SQ")
+      names(reject.null) <- names(null.sl) <- c("E", "VAR", "SQ")
     }
   } else {
     if (!is.null(pvalue))
       warning("pvalue is not NULL, but unused (too many data sets) -- set pvalue=NULL?") 
   }
-
   Etest <- matrix(Etest, nrow=lEbinM1)
   VARtest <- matrix(VARtest, nrow=lEbinM1)
   SQtest <- matrix(SQtest, nrow=lEbinM1)
@@ -488,21 +470,21 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
               MCmodel=MCmodel,
               null.hypo=null.hypo,
               null.sl=null.sl,
-              bin=bin, Ebin=Ebin))
+              bin=bin))
 }
   
 
 ######################################################################
 ######################################################################
 ## formerly: GetEfunction
-mpp.characteristics <- function(bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
+mpp.characteristics <- function(...,
+                                bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
                                 show=FALSE, model=NULL, param=NULL,
                                 summarize=TRUE,
                                 PrintLevel=RFparameters()$Print,
                                 dev=if (name=="") 2 else FALSE,
                                 rdline=if (is.logical(dev)) NULL else readline,
-                                staticchoice=FALSE,
-                                ...){
+                                staticchoice=FALSE){
   ## bin: c(-1,0,...,right margin of the last bin) for the E and VAR-functions
   ##      the programme needs "c(-1,0," as the first vector values!
   ##      (otherwise just nonsense is obtained as result for the tests)
@@ -551,9 +533,9 @@ mpp.characteristics <- function(bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
     args <- args[[1]]
   }
   if (PrintLevel>2)
-    print(paste(c("Arguments:",names(args),"."),collapse=" "),quote=FALSE)
+    print(paste(c("Arguments:", names(args), "."), collapse=" "), quote=FALSE)
   
-  n <- as.integer(length(args)/2)  ## number of species
+  n <- as.integer(length(args) / 2)  ## number of species
   nbins <- as.integer(length(bin)-1)
   dim <- as.integer(2);
   p <- as.double(p);
@@ -785,12 +767,13 @@ mpp.characteristics <- function(bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
         k <- k+1
       }
     }      
-  } 
-  return(list(E=E,ETest=ETest,VAR=VAR,VARTest=VARTest,
+  }
+  ret <- list(E=E,ETest=ETest,VAR=VAR,VARTest=VARTest,
               SQ=SQ, SQTest=SQTest,
               KMM=KMM,GAM=GAM,
               Ebin=Ebin,VARbin=VARbin,KMMbin=KMMbin,GAMbin=GAMbin,
               midbin=midbin,
-              call=match.call()))
+              call=match.call())
+  if (show) invisible(ret) else return(ret)
 }
 

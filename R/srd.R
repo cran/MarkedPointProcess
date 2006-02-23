@@ -933,7 +933,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                                show=showEfct,
                                normalize=normalize, model=est, 
                                c1=x$coord, d1=x$data,
-                               readline=rl,
+                               rdline=rl,
                                dev=dev)
     }
     if (!file.exists(filename)) {

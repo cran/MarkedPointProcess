@@ -6,16 +6,16 @@
   a marked point process
 }
 \usage{
-mpp.characteristics(bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
+mpp.characteristics(...,bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
                     show=FALSE, model=NULL, param=NULL, summarize=TRUE,
                     PrintLevel=RFparameters()$Print,
                     dev=if (name=="") 2 else FALSE,
                     rdline=if (is.logical(dev)) NULL else readline,
-                    staticchoice=FALSE,
-                    ...)
+                    staticchoice=FALSE)
 }
 %- maybe also `usage' for other objects documented here.
 \arguments{
+  \item{\dots}{coordinates and the data for the species, see Details}
   \item{bin}{sequence of increasing bin margins for the functions
     \eqn{E}, \eqn{V}, and \eqn{S}; see Details}
   \item{rep}{number of independent measurements of the marks (at each point); usually 1}
@@ -37,7 +37,6 @@ mpp.characteristics(bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
     \command{\link[RandomFields]{CovarianceFct}}}
   \item{summarize}{logical; if \code{FALSE} results are for each
     repetition seperately (instead of being averaged over the repetitions).} 
-  \item{\dots}{coordinates and the data for the species, see Details}
   \item{PrintLevel}{0,1 or 2. The function gives some short messages if
     \code{PrintLevel} is 1 or 2.}
   \item{rdline}{\code{NULL} or function.
@@ -294,7 +293,7 @@ mpp.characteristics(bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
   \command{mpp.characteristics} returns
   \code{list(E, ETest, VAR, VARTest, SQ, SQTest, KMM, GAM, Ebin, 
     VARbin, KMMbin, GAMbin, midbin, call = match.call())};
-  see Details.
+  see Details. The return is \command{invisible} if \code{show=TRUE}.
 }
 \references{
   Schlather, M., Ribeiro, P., and Diggle, P. (2004)

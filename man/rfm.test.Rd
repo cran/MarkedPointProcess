@@ -13,16 +13,15 @@ rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
          MCmodel=list(model="exponential",
            param=c(mean=0,variance=NA,nugget=0,scale=NA)),
          method=NULL,
-         bin=c(-1,seq(0,1.2,l=15)), Ebin=seq(0,1,0.01),
-         MCregister=1, n.hypo=1000,
-         pvalue=c(90, 95, 99), tests="l1 & w3",
+         bin=c(-1,seq(0,1.2,l=15)), MCregister=1, n.hypo=1000,
+         pvalue=c(10, 5, 1), tests="l1 & w3",
          tests.lp=NULL, tests.weight=NULL, Barnard=FALSE,
          PrintLevel=RFparameters()$Print,...
          )
 }
 %- maybe also `usage' for other objects documented here.
 \arguments{
-  \item{coord}{matrix with 2 columns; the coordinates of the pointss}
+  \item{coord}{matrix with 2 columns; the coordinates of the points}
   \item{data}{vector or matrix; the univariate marks that correspond to
       the locations; if \code{data} is a matrix then each column is
       interpreted as an independent observation given the locations
@@ -37,22 +36,30 @@ rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
     variogram model to be fitted, see
     \command{\link[RandomFields]{fitvario}}.
   }
-  \item{method}{method used to simulate Gaussian random fieldsl;
+  \item{method}{method used to simulate Gaussian random fields;
     see \command{\link[RandomFields]{GaussRF}}
   }
   \item{bin}{sequence of increasing bin margins for calculating
-    the function E, V, etc; see Details}
-  \item{Ebin}{sequence of increasing bin margins for the resulting
-    relative MC test positions of the data; see Details}
+    the function E, V, etc in analogy to the binning for variograms;
+    see Details}
   \item{MCregister}{0:9; the register to which intermediate results are
     stored when the random fields are generated for the MC test}
-  \item{n.hypo}{number of repeated MC tests, see Details}
-  \item{pvalue}{test levels}
+  \item{n.hypo}{number of repeated MC tests to determine the
+    \code{pvalue}-position for the Nullhypothesis.
+    If the variogram were not estimated, this position would
+    be \eqn{(1-\code{pvalue}) (\code{MCrepetitions} + 1)}.
+    see Details}
+  \item{pvalue}{test levels in percent.
+    Only values below 50 are accepted;
+    otherwise 100-\code{pvalue} is regarded as \code{pvalue}
+    (to be consistent with the former definition)
+  }
   \item{tests}{vector of characters, see Details.}
   \item{tests.lp}{vector of characters, see Details.}
   \item{tests.weight}{vector of characters, see Details.}
   \item{Barnard}{test by Barnard (1963) on the independence of marks}
-  \item{PrintLevel}{If zero}
+  \item{PrintLevel}{If zero then no messages are printed. The higher the
+  value the more tracing information is given.}
   \item{...}{any parameter for \command{\link[RandomFields]{variofit}}
     can be passed,
     except for \code{x}, \code{y}, \code{z}, \code{T}, \code{data},
@@ -82,12 +89,10 @@ rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
   increasing sequence.  The first bin must include the zero, i.e.,
   \code{bin=c(-1, 0, \ldots)}.
   \cr
-  
-  \code{Ebin} is ignored if only a single realisation of the data is given.
-  Otherwise \code{Ebin} gives the bounds of the bins for the calculated
-  test statistics.
-
-  \code{n.hypo} : the testing algorithm for a data set is as follows:
+ 
+  \code{n.hypo} : for correct appreciation of the relative position of the
+  statistic for the data set w.r.t. the simulations,
+  the reference values for the estimated \code{pvalue} level must be determined:
   \itemize{
     \item the parameters of a Gaussian random field are adapted to the
     data set
@@ -97,6 +102,15 @@ rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
     MC test based on \code{MCrepetitions} is performed (estimation of
     the parameters of the random field, and test statistics for 99
     realisations)
+    \item the position of the
+    statistic for the simulation within the statistics of
+    the 99 realisations are calculated.
+    \item
+    The position of the larges \code{pvalue} positions is determined, which
+    have values around \eqn{(1-\code{pvalue}) (\code{MCrepetitions} +
+      1)};
+    this position is returned in \code{null.sl} as
+    reference values for the estimated \code{pvalue} level
   }
 
   \code{tests}, \code{tests.lp}, \code{tests.weight}:
@@ -177,21 +191,89 @@ rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
   }
 }
 \value{
-  \code{list(E=,VAR=,SQ=,M=,est=,\ldots)} where \code{\ldots}
-  are the input parameters such as
-  \code{normalize, MCrepetitions, MCmodel, MCparam,
-    sill, bin, Ebin}. 
-  Let \eqn{n} be the number of currently implemented versions of the MC
-  test (using different weights and lp-norms).
-  Then \code{VAR}, \code{SQ}, and \code{M} are all matrices with
-  \eqn{n} columns. The number of rows depends on the input parameters:
+  Let \eqn{n} be the number of MC tests chosen by the user.
+  Then \command{rfm.test} returns a list of the following elements:
+  \cr
+
+  \code{E} (\eqn{E} function)\cr
+  matrix of \eqn{n} columns. The number of rows depends on the input
+  parameters:
   If only one realisation of the \code{data} is given then
-  the absolute test positions of the MC test is returned in \code{E},
-  \code{VAR}, \code{SQ}, and \code{M} in a single row.
+  the absolute test positions of the MC test is returned, i.e. a
+  value between 1 and \eqn{\code{MCrepetition}+1}, inclusively.
+  
   If several realisations of the \code{data} (and the \code{coord})
-  are given, then the number of rows equals \code{length(Ebin)-1},
-  and the each entry contains the number of statistics falling into
-  respective (relative) bin given by \code{Ebin}.
+  are given, then the number of rows equals \eqn{\code{MCrepetition}+1},
+  and the \eqn{k}th row gives
+  the number of test statistics with position \eqn{k}.
+  The first situation is the standard one for the user. The second
+  situation appears when \command{rfm.test} is recalled to calculate
+  the intermediate result \code{null.hypo}, see below.
+  \cr
+     
+  \code{VAR} (\eqn{V} function)\cr
+  matrix of \eqn{n} columns. See \code{E} above. 
+  \cr
+
+  \code{SD} (the square root of the \eqn{V} function)\cr
+  matrix of \eqn{n} columns. See \code{E} above. 
+  \cr
+
+  \code{reject.null}\cr
+  list of logical matrices that indicate whether \code{E}, \code{VAR}
+  or \code{SQ} should be rejected at the given levels, i.e. whether
+  the positions of the tests statistics for \code{E}, \code{VAR}
+  or \code{SQ} are at least as large as the estimated reference values
+  given by \code{null.sl}.
+  \cr
+  
+  \code{est}\cr
+  list of variogram models according to \code{MCmodel} estimated 
+  from the data.
+  \cr
+
+  \code{normalize}\cr
+  The input parameter \code{normalize}.
+  \cr
+
+  \code{MCrepetitions}\cr
+  The input parameter \code{MCrepetitions}.
+  \cr
+
+  \code{MCmodel}\cr
+  The input parameter \code{MCmodel}.
+  \cr
+
+  \code{null.hypo}\cr
+  \code{null.hypo} stores intermediate results that are usually not of
+  interest for the user.
+  \code{n.hypo} simulations have been performed under the null
+  hypothesis to determine the \code{pvalue} test positions. (The explicite
+  determination is necessary, since parameters of the variogram
+  have to be estimated within the null hypothesis.)
+  For these \code{n.hypo} simulations, \command{rfm.test} is run and
+  \code{null.hypo} gives the results. Note that here, all test variants
+  are considered.
+  \cr
+  
+  \code{null.sl}\cr
+  List of matrices. They  give the
+  reference values for the estimated \code{pvalue} level.
+  The values are around (1-\code{pvalue})*(\code{MCrepetitions} + 1),
+  but can range between 1 and \eqn{\code{MCrepetitions} + 2}.
+  If a value of \eqn{\code{MCrepetitions} + 2} occurs, usually,
+  \code{MCrepetitions} and/or \code{n.hypo} have been chosen too small.
+  \cr
+  
+  \code{bin}\cr
+  the binning used to calculate \code{E}, \code{VAR} and \code{SQ}
+}
+\note{
+   In comparison to version 0.1 of MarkedPointProcess and the paper by
+   Schlather et al. (2004), the announced positions of the test statistics
+   for \code{E}, \code{VAR},
+   \code{SD} and \code{null.sl} are all increased by \eqn{1},
+   now ranging from 1 to 100 instead of 0 to 99, for the standard settings.
 }
 \references{
   Barnard, G. (1963)
@@ -210,6 +292,34 @@ rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
   \url{http://www.unibw-hamburg.de/WWEB/math/schlath/schlather.html}}
 \seealso{\command{\link{mpp.characteristics}}, \command{\link{simulateMPP}} }
 
-\examples{}
+\examples{
+%  library(MarkedPointProcess, lib="~/TMP")
+data(BITOEK)
+d <- steigerwald
+plotWithCircles(cbind(d$coord, d$diam), factor=2)
+mpp.characteristics(x=d$coord, data=d$diam,
+                    bin=c(-1, seq(0, 50, 2)), show=interactive())
+
+## testing for E=const, V=const or SD=const (this takes several minutes!)
+res <- rfm.test(d$coord, d$diam, MCrep=if (interactive()) 99 else 9,
+                n.hypo=if (interactive()) 100 else 2)
+% res <- rfm.test(d$coord, d$diam, MCrep=9, n.hypo=2, tests="all")
+
+## test statistics for the data
+res$E
+res$VAR
+
+## reference values for the estimated 10\%, 5\% and 1\% level
+res$null.sl
+
+## should E=const, V=const or SD=const be rejected at the given levels?
+res$reject.null 
+}
+
 \keyword{spatial}% at least one, from doc/KEYWORDS
 
+%% library(RandomFields); source("~/R/RF/RandomFields/tests/source.R")
+%x <- 1:100
+%z <- GaussRF(x, model="exp", param=c(0,2,0,5), n=10)
+%v <- fitvario(x=x, data=z, cross.methods=NULL, mle.methods="ml",
+%              model=list(model="exp", param=c(0, NA, 0, NA)), table.f=TRUE)

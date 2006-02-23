@@ -31,7 +31,7 @@ EXTERN void GenerateMPPData(double *coord,
 
 EXTERN void MCtest(int *repet, double *coord, double *data, int *npoints,
 		   int *dim, double *simu, int *PrintLevel,
-		   double *bin, int *nbin, double *estbin, int *nestbin,
+		   double *bin, int *nbin, 
 		   int *Etestposition, int *VARtestposition, int *SQtestposition,
 		   int *Maxtests, int *nmaxtests, int *MAXtestposition,
 		   int *error, int *additive, int *copyANDstatic);

@@ -259,11 +259,11 @@ void test(double *E, int *N, long double *sigma, int *lb, int *species,
 	      if (E[eseg+i]>max) max=E[eseg+i]; 
 	      nrstatistic = sseg;	    
 	      robustX = X[i] < q ? X2[i] : twoq * X[i] - q2;
-	      antirob1= X[i] < a1 ? X[i] : b1 * (dummy=X[i]+a1) * dummy;
-	      //antirob2= X[i] < a2 ? X[i] : b2 * (dummy=X[i]+a2) * dummy;
-	      //antirob3= X[i] < a3 ? X[i] : b3 * (dummy=X[i]+a3) * dummy;
-	      //antirob4= X[i] < a4 ? X[i] : b4 * (dummy=X[i]+a4) * dummy;
-	      //antirob5= X[i] < a5 ? X[i] : b5 * (dummy=X[i]+a5) * dummy;
+	      antirob1= X[i] < a1 ? X[i] : (b1 * (X[i]+a1) * (X[i]+a1));
+	      //antirob2= X[i] < a2 ? X[i] : b2 * (X[i]+a2) * (X[i]+a2);
+	      //antirob3= X[i] < a3 ? X[i] : b3 * (X[i]+a3) * (X[i]+a3);
+	      //antirob4= X[i] < a4 ? X[i] : b4 * (X[i]+a4) * (X[i]+a4);
+	      //antirob5= X[i] < a5 ? X[i] : b5 * (X[i]+a5) * (X[i]+a5);
 	      
 	      for (nW=0; nW < NUMBERWEIGHTS; nW++) {	      
 		double wx,wx2,aW; 
@@ -544,7 +544,8 @@ int mcf_internal(double *E, double *ETEST, int *EBIN,
           seg[0] = i;
           seg[1] = j;
 	  for (d=0;d<dim;d++) {
-	    dist += (dummy=X[spec[0]][seg[0]]-X[spec[1]][seg[1]]) * dummy;
+	    dummy = X[spec[0]][seg[0]]-X[spec[1]][seg[1]];
+	    dist += dummy * dummy;
 	    seg[0] += row[0]; 
 	    seg[1] += row[1];
 	  }
@@ -885,26 +886,10 @@ ErrorHandling:
 }
 
 
-void store(int value, int *whereto, int *intestbin, int nestbin) {	  
-  int low;
-  if ((value>=intestbin[0]) && (value<intestbin[nestbin])) {
-    register int up, cur;
-    low=0; up= nestbin-1; cur= nestbin/2;
-    while (low!=up) {
-      if (value >= intestbin[cur]) {low=cur;} else {up=cur-1;} // [ * ; * ) 
-      cur=(up+low+1)/2;
-    }
-    (whereto[low])++;
-  } else {
-    if (MPP_PRINTLEVEL>0) 
-      PRINTF("value (%d) outside inttestbin [%d, %d] \n",
-	     value,intestbin[0],intestbin[nestbin]); 
-  }
-}
 
 void MCtest(int *repet, double *coord, double *data, int *npoints,
 	    int *dim, double *simu,  int *PrintLevel,
-	    double *bin, int *nbin, double *estbin, int *nestbin,
+	    double *bin, int *nbin,
 	    int *Etestposition, int *VARtestposition, int *SQtestposition, 
 	    int *Maxtests, int *nmaxtests, int *MAXtestposition,
 	    int *error, int *additive, int *staticchoice)
@@ -917,14 +902,11 @@ void MCtest(int *repet, double *coord, double *data, int *npoints,
        simu   : gives the simulation results (Barnard type and Gaussrf)
        bin    : the margins of the bins for the E and the VAR function
        nbin   : number of bins! i.e. length(bin)-1
-       estbin : usually 0.00,0.01,...,1.00;  margins for the ranks in percent
-       nestbin : number of Etest bins, so length(estbin)-1
-       nestbin : number of estbins, i.,e length(estbin)-1
-           NOTE: if ncol==1 then Etestposition and VARtestposition returns the 
-	   rank in Etestposition[0..NUMBERTESTS-1] and 
+
+      NOTE: if ncol==1 then Etestposition and VARtestposition returns the 
+	     rank in Etestposition[0..NUMBERTESTS-1] and 
 	                                      VARtestposition[0..NUMBERTESTS-1]
-	   the actual values of estbin and nestbin are ignored!
-	   Etestposition, VARtestposition
+       Etestposition, VARtestposition
        Etestposition : 
        VarTesttposition :
        SQtestposition   :
@@ -952,11 +934,6 @@ void MCtest(int *repet, double *coord, double *data, int *npoints,
   double **X, **DATA, *DUMMY;
 
    int nn, i, j, k,
-    *intestbin, 
-    /* the values in estbin are given in quantiles, here the equivalent,
-       absolute values are stored. Example: repet=99, estbin=0.0,..,1
-       then intestbin 0,1,..,99
-    */
     Epos[NUMBERTESTS], VARpos[NUMBERTESTS],SQpos[NUMBERTESTS],*MAXpos; 
   /* they store the actual rank of the data-"E"-statistic in the MC test */
     
@@ -973,31 +950,11 @@ void MCtest(int *repet, double *coord, double *data, int *npoints,
   E=ETest=VAR=VARTest=KMM=GAM=SQ=SQTest=NULL;
   X=DATA=NULL;
   DUMMY=NULL;
-  Ebin=VARbin=KMMbin=GAMbin=intestbin=MAXpos=NULL;
+  Ebin=VARbin=KMMbin=GAMbin=MAXpos=NULL;
 
-  if ((intestbin = (int*) malloc(sizeof(int) * (*nestbin+1)))==NULL) {
-    *error=MPPERR_MEMALLOC; goto ErrorHandling;}
   nn = *repet + 1;
 
   GetRNGstate();
-
-  if (*additive) {
-    /*
-      store Etest result in large matrix, so that position in matrix is 
-      equivalent to value otherwise return the Etest value directly
-    
-      if additive, then the user of R has to ensure that Etest,etc are set
-      to zero at the very beginning
-      
-      additive is necessary, if data are simulated for different coordinates, 
-      but where the results in the Etest table should be added up
-    */
-    for(i=0; i<=*nestbin; i++) {
-      if (estbin[i]>1e-10) 
-	intestbin[i] = ((int) (estbin[i] * (double) nn - 1e-10)) + 1;        
-      else intestbin[i] = 0;
-    }
-  }
 
   {
     int double_nn_nbin,  int_nn_nbin, double_nn_NT;
@@ -1041,7 +998,7 @@ void MCtest(int *repet, double *coord, double *data, int *npoints,
   
   // calculate rank of test statistic 
   k = NUMBERTESTS;
-  for (i=0;i<NUMBERTESTS;i++){ Epos[i]=VARpos[i]=SQpos[i]=0; }
+  for (i=0;i<NUMBERTESTS;i++){ Epos[i]=VARpos[i]=SQpos[i]=0; } // ja nicht auf 1
   for (i=1; i<nn; i++){//nn : number of total sets (true data + simulated ones)
     for (j=0; j<NUMBERTESTS; j++) { // j indexes the results for the true data
       if (ETest[j]>ETest[k]) {Epos[j]++;}
@@ -1072,13 +1029,13 @@ void MCtest(int *repet, double *coord, double *data, int *npoints,
   
   if (*additive) {  
     // store ranks in matrix 
-    for (i=0,k=0;i<NUMBERTESTS;i++,k+=*nestbin){
-      store(Epos[i], &(Etestposition[k]), intestbin, *nestbin);
-      store(VARpos[i], &(VARtestposition[k]), intestbin, *nestbin);
-      store(SQpos[i], &(SQtestposition[k]), intestbin, *nestbin);
+    for (i=0,k=0; i<NUMBERTESTS; i++, k+=nn){
+      Etestposition[k + Epos[i]]++;
+      VARtestposition[k + VARpos[i]]++;
+      SQtestposition[k + SQpos[i]]++;
       }
-    for (i=0,k=0;i<*nmaxtests;i++,k+=*nestbin)
-      store(MAXpos[i], &(MAXtestposition[k]), intestbin, *nestbin);
+    for (i=0,k=0; i<*nmaxtests; i++, k+=nn)
+      MAXtestposition[k + MAXpos[i]]++;
   } else { // !*additive
     // store rank value 
     if (MPP_PRINTLEVEL>4) PRINTF("storing ranks directly...\n");
@@ -1092,7 +1049,6 @@ void MCtest(int *repet, double *coord, double *data, int *npoints,
 
   PutRNGstate();
 
-  free(intestbin);
   free(E);    free(ETest);   free(Ebin);
   free(VAR);  free(VARTest);
   free(SQ);   free(SQTest);  free(VARbin);
@@ -1105,7 +1061,6 @@ void MCtest(int *repet, double *coord, double *data, int *npoints,
   
  ErrorHandling:   
   if (MPP_PRINTLEVEL>0) MPPErrorMessage(*error);
-  if (intestbin!=NULL) free(intestbin);
   if (E!=NULL) free(E);    
   if (ETest!=NULL) free(ETest);   
   if (Ebin!=NULL) free(Ebin);

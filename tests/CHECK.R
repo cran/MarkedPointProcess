@@ -266,19 +266,19 @@ mcfR <- function(data, col, rep, p, bin, analyseresult=NULL, getEresult=NULL) {
   ESIGMA[ESIGMA<epsilonvariance] <- epsilonvariance
   
   et <- teststatistic(E, EBIN, ESIGMA, sd=estSd, col=col, n=n, rep=rep, p=p)
-  if (ncol(et) > 2) et.rank <- apply(et[,1] > et[, -1, drop=FALSE], 1, sum)
+  if (ncol(et) > 2) et.rank <- apply(et[,1] >= et, 1, sum)
 
   assign("testname", "Vtest", envir=.GlobalEnv)
   VARSIGMA[VARSIGMA<epsilonvariance] <- epsilonvariance
   vt <- teststatistic(VAR, VARBIN, VARSIGMA, sd=estSDVar, col=coltri, n=n,
                       rep=rep, p=p)
   vt.rank <- matrix(vt, nrow=nrow(vt) * coltri * n * n)
-  if (ncol(vt) > 2) vt.rank <- apply(vt[,1] > vt[, -1, drop=FALSE], 1, sum)
+  if (ncol(vt) > 2) vt.rank <- apply(vt[,1] >= vt, 1, sum)
   
   assign("testname", "Stest", envir=.GlobalEnv)
   st <- teststatistic(SQ, SQBIN, sqrt(VARSIGMA), sd=estSDsd, col=coltri, n=n,
                       rep=rep, p=p)
-  if (ncol(st) > 2) st.rank <- apply(st[, 1] > st[, -1, drop=FALSE], 1, sum)
+  if (ncol(st) > 2) st.rank <- apply(st[, 1] >= st, 1, sum)
   l <- list(E=E, Ebin=EBIN, ETest=et, ET=et.rank,
             VAR=VAR, VARbin=VARBIN, VARTest=vt, VT=vt.rank,
             SQ=SQ, SQbin=SQBIN, SQTest=st, SQT=st.rank,
@@ -470,7 +470,6 @@ DeltaMC <- function(data=NULL, rep, bin, n, MCrep,
   
   if (is.vector(param))  param <- matrix(param, ncol=n, nrow=length(param));
 #  if (ncol(param) < rep) param <- matrix(param, nrow=nrow(param), ncol=rep)
-  Ebin <- seq(0, 1, 0.01)
 
   if (DEBUG) cat("simulate...")
   if (is.null(data)) {
@@ -482,26 +481,25 @@ DeltaMC <- function(data=NULL, rep, bin, n, MCrep,
     if (n==1) data <- list(data)
   }
   ## rfm.test(data=data, normalize=FALSE, MCrep=MCrep,
-  ##         MCmodel=model, MCparam=param, sill=sill, bin=biin, Ebin=Ebin,
+  ##         MCmodel=model, MCparam=param, sill=sill, bin=biin,
   ##         use.naturalscaling=TRUE)
   
-  lEbinM1 <- as.integer(length(Ebin)) - 1
-  Etest <- integer((length(Ebin)-1) * .mpp.tests)
-  VARtest <- integer((length(Ebin)-1) * .mpp.tests)
-  SQtest <- integer((length(Ebin)-1) * .mpp.tests) ###
-  MAXtest <- integer((length(Ebin)-1) * .mpp.nr.maxtests) ###
+  lEbinM1 <- MCrep + 1
+  Etest <- integer(lEbinM1 * .mpp.tests)
+  VARtest <- integer(lEbinM1 * .mpp.tests)
+  SQtest <- integer(lEbinM1 * .mpp.tests) ###
+  MAXtest <- integer(lEbinM1 * .mpp.nr.maxtests) ###
 
   ## arrays to store places with differences
-  ET <- matrix(0, nrow=length(Ebin)-1, ncol=.mpp.tests)
-  VT <- matrix(0, nrow=length(Ebin)-1, ncol=.mpp.tests)
-  SQT <- matrix(0, nrow=length(Ebin)-1, ncol=.mpp.tests)
+  ET <- matrix(0, nrow=lEbinM1, ncol=.mpp.tests)
+  VT <- matrix(0, nrow=lEbinM1, ncol=.mpp.tests)
+  SQT <- matrix(0, nrow=lEbinM1, ncol=.mpp.tests)
   ##MT = matrix(MAXtest,nrow=length(Ebin)-1)
   additive <- as.integer(1)
   error <- integer(1)
 
   EPSILON <- 0.000000001
-  intestbin <-  as.integer(Ebin * (MCrep+1) + 1 - EPSILON)
-  intestbin[Ebin<EPSILON] <- 0
+  intestbin <-  1 : (MCrep + 1)
 
   m <- list()
   if (DEBUG) cat("fitvario...")
@@ -532,8 +530,8 @@ DeltaMC <- function(data=NULL, rep, bin, n, MCrep,
          as.integer(1 + 4 * DEBUG), # PrintLevel
          as.double(bin),
          as.integer(length(bin)-1),
-         as.double(Ebin),
-         as.integer(length(Ebin)-1),
+#         as.double(Ebin),
+#         as.integer(length(Ebin)-1),
          Etest,
          VARtest,
          SQtest,  ###
@@ -549,6 +547,8 @@ DeltaMC <- function(data=NULL, rep, bin, n, MCrep,
       stopifnot(!is.null(simuresult))
       
       Etest <- matrix(Etest, ncol=.mpp.tests)
+      VARtest <- matrix(VARtest, ncol=.mpp.tests)
+      SQtest <- matrix(SQtest, ncol=.mpp.tests)
       simuresult <- matrix(simuresult, nrow=nrow(Data))    
       
       if (DEBUG) cat("testing...")
@@ -558,12 +558,9 @@ DeltaMC <- function(data=NULL, rep, bin, n, MCrep,
                   daten), #+ rnorm(length(daten), 0, 0.0001)), # force errors
                   col=1, rep=MCrep+1, p=p, bin=bin)
       for (j in 1:.mpp.tests) {
-        index <- sum(intestbin <= x$ET[j])                   
-        ET[index, j] <- ET[index, j] + 1
-        index <- sum(intestbin <= x$VT[j])                   
-        VT[index,j] <- VT[index,j] + 1
-        index <- sum(intestbin <= x$SQT[j])                    
-        SQT[index,j] <- SQT[index,j] + 1
+        ET[x$ET[j], j]   <- ET[x$ET[j], j] + 1
+        VT[x$VT[j], j]   <- VT[x$VT[j], j] + 1
+        SQT[x$SQT[j], j] <- SQT[x$SQT[j], j] + 1
       }
     }
   }
@@ -576,6 +573,10 @@ DeltaMC <- function(data=NULL, rep, bin, n, MCrep,
     print("simuresult")
     print(simuresult)
   }
+
+#  print(ET) #12
+#  print(Etest) #13
+
   print(match.call())
   print("summaries")
   sE <- sum(abs(ET-Etest)[, 1:(.mpp.tests-2)], na.rm=TRUE)
