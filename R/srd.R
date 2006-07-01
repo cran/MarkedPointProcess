@@ -60,14 +60,14 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     simu.individ.list <- c(100)
   }
   
-  data(BITOEK)
+  data("BITOEK")
   RFparameters(Print=PrintLevel, pch=if (PrintLevel<3) "" else "*",
                TBMCE.force=TRUE)
 
   steigerwald.showEfct <- TRUE
   steigerwald.normalize <- TRUE
   coulissenhieb.showEfct <- TRUE
-  coulissenhieb.normalize <- TRUE
+  coulissenhieb.normalize <- TRUE ##
   biondi.etal.showEfct <- TRUE
   biondi.etal.normalize <- TRUE
   data <-
@@ -151,12 +151,14 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
       assign(n, paste(name,  "/", sep=""))
   }
   
-  assign(env=ENV, "norm", function(x) {qnorm((rank(x)-0.5)/length(x))})
-
-  assign(env=ENV, "rl", if (readlines)
+  assign(#env=ENV,
+         "norm", function(x) {qnorm((rank(x)-0.5)/length(x))})
+ 
+  assign(#env=ENV,
+         "rl", if (readlines)
          function(x) if (x=="") readline("press return")
          else readline(paste(x, ": press return"))
-  else function(x) { cat(x); sleep.milli(1000); cat("\n")})
+         else function(x) { cat(x); sleep.milli(1000); cat("\n")})
         
   .dummy <- .C("GetmppParameters", lnorms=integer(1), weights=integer(1),
                tests=integer(1), mppmaxchar=integer(1), modelnr=integer(1),
@@ -229,7 +231,6 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
       saving <- TRUE
     } else if (is.logical(saving))
       basicfn <- paste("mpp.result", npoints, coordmodel, 
-                       coordparameter[length(coordparameter)], 
                        paste(model, collapse="_"), MCrepetitions,
                        if (is.function(MCmodel)) MCmodel(0)$model else MCmodel, 
                        variance*100, sep=".")
@@ -266,7 +267,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                          MCrepetitions = MCrepetitions,
                          MCmodel = (if (is.function(MCmodel)) MCmodel(variance)
                                     else MCmodel),
-                         bin = bin, Ebin = Ebin, 
+                         bin = bin, # Ebin = Ebin, 
                          MCregister = MCregister, method=method, 
                          pvalue=NULL, tests="all", Barnard=Barnard,
                          sill = sill, use.naturalscaling = use.naturalscaling,
@@ -457,6 +458,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
       
       if (!absolute) {
         name1 <- paste(basicname, 100, sep="")
+        result <- NULL
         load(name1)
         for (i in 1:length(Numbers)) {
           rate <- apply(result[[i]], 2, cumsum)
@@ -857,7 +859,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                           lower.kappa = NULL, upper.kappa = NULL, 
                           normalize=TRUE, showEfct = FALSE,
                           name=paste("dummy", radius*100, scale*100, individ, 
-                            sill*100, nr, sep="."), 
+                            sill*100, sep="."), 
                           ## plotting with radii
                           height=5, 
                           pfactor=diff(simuxlim)*diff(simuylim)
@@ -911,7 +913,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                     data=x, normalize=normalize, MCrepetition=MCrep, 
                     MCmodel=MCmodel,
                     # method,
-                    bin=bin, Ebin=seq(0, 1, 0.01),
+                    bin=bin, # Ebin=seq(0, 1, 0.01),
                     # use.naturalscaling, MCregister,
                     n.hypo=data.n.hypo,
                     # pvalue, tests, tests.lp, tests.weight, Barnard, Print
@@ -977,7 +979,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                        showEfct=get(paste(data[[i]]$set, ".showEfct", sep="")), 
                        MCmodel=data.MCmodel, 
                        lower.kappa = 0.01, upper.kappa=10, 
-                       normalize=get(paste(data[[i]]$set, ".showEfct", sep="")), 
+                       normalize=get(paste(data[[i]]$set, ".normalize",sep="")), 
                        name=data[[i]]$set, 
                        pfactor=data[[i]]$pfactor ## 2: diameter!
                        )
@@ -995,6 +997,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
       plot(Inf, Inf, xlim=data.xlim, ylim=data.ylims[, f], xlab=data.xlab, 
            ylab=data.ylabs[f])
       for (i in 1:length(ALL)) {
+        v <- NULL
         eval(parse(text=paste("v <- ALL[[i]]$d$plots$", data.fcts[f], sep="")))
         if (PrintLevel>7) {
           print(as.vector(v))
@@ -1013,7 +1016,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
       }
       if (data.fcts[f]=="GAM")
         legend(x=max(data.xlim), y=0, xj=1, yj=0, legend=leg, 
-               lty=sapply(ALL, function(x) x$lty), 
+               lty=sapply(ALL, function(x) if (is.list(x)) x$lty else NULL), 
                cex=1.4)
       if (is.numeric(dev)) rl(filename)
       Dev(FALSE)

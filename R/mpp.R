@@ -25,6 +25,11 @@ assign(".mpp.extranames", c("range", "no.bin.sq", "no.bin.abs"), env=.ENV)
     ## to-do list -- since my surname is rare, the message should 
     ## appear only on computers I have a login
     cat("To-Do List\n==========\n")
+
+
+
+    print(" mpp antrittsvorlesung: raus")
+    
   }
  
   ##  dummy <- .C("GetmppParameters", lnorms=integer(1), weights=integer(1),
@@ -58,7 +63,7 @@ get.mpp.names <- function() {
 
 splitmodel <- function(model) {
   if (missing(model) || (length(model)==0)) return(list(RF=list(),mpp=list()))
-  op.list <- c("+","*")
+  op.list <- c("+", "*")
   model.names <- get.mpp.names()
   all.names <- c(model.names, GetModelNames())
 
@@ -66,14 +71,15 @@ splitmodel <- function(model) {
   mean <- model$mean
   model$trend <- model$mean <- NULL
   if (any(is.na(sapply(model, function(x) {
-                        ifelse(is.null(x$m), pmatch(x, op.list),
-                              pmatch(x$m, all.names)) }))))
+                        ifelse(is.list(x),
+                               pmatch(x$m, all.names),
+                               pmatch(x, op.list)
+                              ) }))))
     ## prevents that names are not given uniquely; e.g. model="n"
     ## could mean "nearest neighbour" or "nugget"
     stop(paste("operators not correct, or model names not unique within {",
                paste(all.names,collapse=", "),"}"))
-  n <- sapply(model, function(x) ifelse(is.null(x$m), NA,
-                                        pmatch(x$m, model.names)))
+  n <- sapply(model, function(x) ifelse(is.list(x), pmatch(x$m, model.names), NA))
   index <- !is.na(n)
   index.op <- c(index[-1],FALSE) | c(FALSE,index[-length(index)])
   ## immer noch nicht 100% geprueft:
@@ -169,8 +175,10 @@ simulateMPP <- function(coordmodel=c("given", "uniform", "Poisson"),
     lambda <- npoints / (diff(window[c(1,2)]) * diff(window[c(3,4)]))
   model <- splitmodel(model)
   RF <- model$RF
-  mpp.models <- unlist(sapply(model$mpp, function(x) x$mnr))
-  mpp.parameters <- unlist(sapply(model$mpp, function(x) x$p))
+  mpp.models <- unlist(sapply(model$mpp,
+                              function(x) if (is.list(x)) x$mnr else NULL))
+  mpp.parameters <- unlist(sapply(model$mpp,
+                                  function(x) if (is.list(x)) x$p else NULL))
  
   error <- integer(1)
 
@@ -280,6 +288,7 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
                      tests=integer(1), mppmaxchar=integer(1), modelnr=integer(1),
                      PACKAGE="MarkedPointProcess", DUP=FALSE)
   .mpp.tests <- dummy$tests
+  .mpp.l.norms <- dummy$lnorms
   .mpp.weights <- dummy$weights
   .mpp.weightnames2 <- paste("w", 1:.mpp.weights, sep="")
   dummy <- as.matrix(expand.grid(.mpp.lpnames, .mpp.weightnames))
@@ -295,7 +304,7 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
       tw <- pmatch(tests.weight, .mpp.weightnames)
       tw[is.na(tw)] <- pmatch(tests.weight[is.na(tw)], .mpp.weightnames2)
       tests <- c(tests, pmatch(outer(pmatch(tests.lp, .mpp.lpnames),
-                                     mpp.l.norms * (tw -1), "+")))
+                                     .mpp.l.norms * (tw -1), "+")))
     }
     if (!is.null(tests)) {
       users.tests[pmatch(tests, .mpp.testnames)] <- TRUE
@@ -317,7 +326,7 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
   if (!is.null(coord)) {
     data <- list(list(coord=coord,data=data))
   } else {
-    if (!is.null(data$data)) data <- list(data)
+    if (is.list(data) && !is.null(data$data)) data <- list(data)
   }
 
   data <- lapply(data, function(x) list(coord=x$coord, data=as.matrix(x$data)))
@@ -446,7 +455,10 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
         if (any(null.sl[[i]] == 1))
           warning("strange result: null.sl equals 1 somewhere")
         if (any(null.sl[[i]] > n.hypo) && PrintLevel > 1)
-          print("estimated position for p-value in null hypothesis exceeds position given by 'pvalue' by leading to imprecise results (",i,",",p,",",z,") -- increase MCrepetitions!\n")
+          print("estimated position for p-value in null hypothesis exceeds",
+                "position given by 'pvalue' by leading to imprecise results (",
+                i, ",", p, ",", null.sl[[i]], ",", n.hypo,
+                ") -- increase MCrepetitions!\n")
       }
       names(reject.null) <- names(null.sl) <- c("E", "VAR", "SQ")
     }
@@ -539,6 +551,7 @@ mpp.characteristics <- function(...,
   
   n <- as.integer(length(args) / 2)  ## number of species
   nbins <- as.integer(length(bin)-1)
+  if (nbins<1) stop("parameter `bin' is not given correctly")
   dim <- as.integer(2);
   p <- as.double(p);
   bin <- as.double(bin)
@@ -581,6 +594,9 @@ mpp.characteristics <- function(...,
   }
   ## investigate if all the data have the same number of columns; if not, stop
   ## and if divisible by rep
+
+  print(list(rep , n^2, col ,nbins))
+  
   E <- double(rep * n^2 * col * nbins)
   ETest <- double(rep * n^2 * col * .mpp.tests)
   Ebin <- integer(n^2 * col * nbins)
@@ -628,6 +644,10 @@ mpp.characteristics <- function(...,
 
   E <- matrix(E, nrow=nbins)
   ETest <- matrix(ETest, nrow=.mpp.tests)
+  Ebin <- matrix(Ebin, nrow=nbins)
+  VARbin <- matrix(VARbin, nrow=nbins)
+  KMMbin <- matrix(KMMbin, nrow=nbins)
+  GAMbin <- matrix(GAMbin, nrow=nbins)
   VAR <- matrix(VAR, nrow=nbins)
   VARTest <- matrix(VARTest, nrow=.mpp.tests)
   SQ <- matrix(SQ, nrow=nbins)
@@ -642,12 +662,13 @@ mpp.characteristics <- function(...,
     rangebin <- c(0,bin[length(bin)])
     ps <- paste(name, "Ebin.ps", sep=".")
     Dev(TRUE, dev, ps=ps)
-    plot(midbin, Ebin, xlab="distance r", ylab="n")
+    
+    plot(midbin, Ebin[, 1], xlab="distance r", ylab="n")
     Dev(FALSE, dev)
     if (!is.null(rdline)) rdline(ps)
     ps <- paste(name, "VARbin.ps", sep=".")
     Dev(TRUE, dev, ps=ps)
-    plot(midbin, VARbin, xlab="distance r", ylab="n")
+    plot(midbin, VARbin[, 1], xlab="distance r", ylab="n")
     Dev(FALSE, dev)    
     for (i in 1:n) { #species i
       segmentE <- (i - 1) * (col * n + 1) 
@@ -663,10 +684,17 @@ mpp.characteristics <- function(...,
           for (r in ((0:(rep-1)) * col * n * n)){
             if (!is.null(rdline)) rdline(ps)
             ps <- paste(name, "E", i, j, cc, "ps", sep=".")
-            Dev(TRUE, dev, ps=ps)
-            plot(midbin, E[, k + r], xlab="distance r", ylab=ylab)
+            Dev(TRUE, dev, ps=ps
+                , height=5, width=8 ####
+                )
+            plot(midbin, E[, k + r],
+    #             xlab="distance r", ylab=ylab
+                 xlab="Distanz h [m]", ylab="E(h) [cm]", col="red", cex=1.5 ####
+                 )
             lines(rangebin, c(E[1, r + segmentE + cc],
-                              E[1, r + segmentE + cc]), lty=3)
+                              E[1, r + segmentE + cc]), lty=3
+                  , col="green" ####
+                  )
             Dev(FALSE, dev)
           }
           k <- k+1;          
@@ -722,7 +750,7 @@ mpp.characteristics <- function(...,
     if (!is.null(rdline)) rdline(ps)
     ps <- paste(name, "KMMbin.ps", sep=".")
     Dev(TRUE, dev, ps=ps)
-    plot(midbin, KMMbin, xlab="distance r", ylab="n")
+    plot(midbin, KMMbin[, 1], xlab="distance r", ylab="n")
     Dev(FALSE, dev)    
     k <- 1;
     for (i in 0:(n*col-1)) {
@@ -749,9 +777,14 @@ mpp.characteristics <- function(...,
         for (r in ((0:(rep-1))*colsum2)){
           if (!is.null(rdline)) rdline(ps)
           ps <- paste(name,"G",spec1,spec2,col1,col2,"ps",sep=".")
-          Dev(TRUE, dev, ps=ps)
-          plot(midbin, GAM[,k+r], xlab="distance r",
-               ylab=paste("gamma", ylab, sep=""))
+          Dev(TRUE, dev, ps=ps
+              , height=5, width=8 ####
+              )
+          plot(midbin, GAM[,k+r],
+               #xlab="distance r", ylab=paste("gamma", ylab, sep="")
+               xlab="Distanz r [m]", ylab=expression(gamma(r) * " [cm^2]"),
+               col="red", cex=1.5 ###
+               )
           if (!is.null(model)) {
             xx <- seq(max(midbin)/100000,max(midbin),l=length(midbin)*4);
             lines(xx, Variogram(x=xx, model=model, param=param))

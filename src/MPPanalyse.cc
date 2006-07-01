@@ -1,6 +1,6 @@
 /* 
  Authors
- Martin Schlather, schlath@hsu-hh.de
+ Martin Schlather, martin.schlather@math.uni-goettingen.de
 
  library for simulation and analysis of marked point processes:
     analysis of mpp

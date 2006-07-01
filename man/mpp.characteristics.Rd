@@ -303,8 +303,8 @@ mpp.characteristics(...,bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
   Schlather, M. (2001) On the second order characteristics of marked
   point processes, \emph{Bernoulli} \bold{7}, 99-117. 
 }
-\author{Martin Schlather, \email{schlath@hsu-hh.de}
-  \url{http://www.unibw-hamburg.de/WWEB/math/schlath/schlather.html}}
+\author{Martin Schlather, \email{martin.schlather@math.uni-goettingen.de}
+  \url{http://www.stochastik.math.uni-goettingen.de/institute}}
 \seealso{\command{\link{rfm.test}}, \command{\link{simulateMPP}} }
 
 \examples{

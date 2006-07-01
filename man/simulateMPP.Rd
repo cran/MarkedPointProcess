@@ -92,8 +92,8 @@ simulateMPP(coordmodel=c("given", "uniform", "Poisson"),
   \code{list( list(coord, data), \ldots, list(coord, data) )}
 }
 %\references{}
-\author{Martin Schlather, \email{schlath@hsu-hh.de}
-  \url{http://www.unibw-hamburg.de/WWEB/math/schlath/schlather.html}}
+\author{Martin Schlather, \email{martin.schlather@math.uni-goettingen.de}
+  \url{http://www.stochastik.math.uni-goettingen.de/institute}}
 \seealso{\command{\link{get.mpp.names}},
   \command{\link{rfm.test}}, \command{\link{simulateMPP}},
   \command{\link{splitmodel}}, \link{MarkedPointProcess}

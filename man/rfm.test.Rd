@@ -288,8 +288,8 @@ rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
   Detecting Dependence Between Marks and Locations of Marked Point Processes
   \emph{J. R. Statist. Soc., Ser. B} \bold{66}, 79-83.
 }
-\author{Martin Schlather, \email{schlath@hsu-hh.de}
-  \url{http://www.unibw-hamburg.de/WWEB/math/schlath/schlather.html}}
+\author{Martin Schlather, \email{martin.schlather@math.uni-goettingen.de}
+  \url{http://www.stochastik.math.uni-goettingen.de/institute}}
 \seealso{\command{\link{mpp.characteristics}}, \command{\link{simulateMPP}} }
 
 \examples{
