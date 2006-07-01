@@ -30,13 +30,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "auxiliary.h"
 #include <Rgraphics.h>
 
-
+/*
 void xyInchToPixels(double *xy, double *Pixels) {
   DevDesc* dd;
   dd = CurrentDevice();
   Pixels[0] = GConvertXUnits(xy[0], INCHES, DEVICE, dd);
   Pixels[1] = GConvertYUnits(xy[1], INCHES, DEVICE, dd);
 }
+*/
 
 
 void orderdouble(double *d, int *pos, int start, int end)

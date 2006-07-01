@@ -4,7 +4,7 @@
 
 #include "GSLvsR.h"
 
-EXTERN void xyInchToPixels(double *xy, double *Pixels);
+// EXTERN void xyInchToPixels(double *xy, double *Pixels);
 EXTERN void RandomPermutation(double *x, int n, double *y 
 				  );
 EXTERN double quantile(double *X, int lb, double p);
