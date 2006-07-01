@@ -82,7 +82,7 @@ simulateMPP(coordmodel=c("given", "uniform", "Poisson"),
   marked point process parts only by \code{OP.i="+"}.
 }
 \value{
-  \code{coordrepet==1}\cr
+  \code{coordrepet=1}\cr
   the function returns \code{list(coord, data)},
   \code{data} contains the independent drawing of the marks (as
   columns)\cr

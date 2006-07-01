@@ -116,16 +116,17 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                         title="Nearest neighbour", model="nearest neighbour"),
                       var=list(file=paste("variance", repet, sep="-"),
                         title="Variance by random coins", model="variance",
-                        intrinsic.var=function(lbRd) 1 + lbRd * (3 + lbRd)),
+                        intrinsic.var=function(lbRd) 1 + lbRd * (3 + lbRd))
                       )
-  assign(env=NULL, "simu.completename",
+  ENV <- new.env(parent = baseenv())
+  assign(env=ENV, "simu.completename",
     function(basicname, variance) paste(basicname, variance * 100, sep="."))
-  assign(env=NULL, "simu.addname",
+  assign(env=ENV, "simu.addname",
     function(basic.name, estimate, simulate, MCmodel, gauss.model,
              radius, scale, individ)
       paste(basic.name, estimate, simulate, MCmodel, gauss.model, 
             radius*100, scale *100, individ, sep="."))
-  assign(env=NULL, "simu.nnname",
+  assign(env=ENV, "simu.nnname",
          function(scale, x, y, individ)
          paste(simu.models$nn$file, scale * 100, round(x*y), individ, sep="."))
   simu.name.EVS <- c("E", "V", "S")
@@ -150,9 +151,9 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
       assign(n, paste(name,  "/", sep=""))
   }
   
-  assign(env=NULL, "norm", function(x) {qnorm((rank(x)-0.5)/length(x))})
+  assign(env=ENV, "norm", function(x) {qnorm((rank(x)-0.5)/length(x))})
 
-  assign(env=NULL, "rl", if (readlines)
+  assign(env=ENV, "rl", if (readlines)
          function(x) if (x=="") readline("press return")
          else readline(paste(x, ": press return"))
   else function(x) { cat(x); sleep.milli(1000); cat("\n")})
@@ -461,7 +462,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
           rate <- apply(result[[i]], 2, cumsum)
           rate <- 1-rate/rate[nrow(rate), 1]           
           for (p in 1:length(pvalue)) {
-            position[[i]][p, ] <- apply(rate>1-pvalue[p]/100, 2, sum)
+            position[[i]][p, ] <- colSums(rate>1-pvalue[p]/100)
             for (z in 1:Numbers[i]) {         
               if (position[[i]][p, z]>0)
                 factor[[i]][p, z] <-
@@ -548,7 +549,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                      legend=c("max-min", "L2, no bin", "L1, no bin", 
                        expression(w[1]),  expression(w[2]), 
                        expression(w[3]), expression(w[4]), 
-                       expression(w[5]), expression(w[6]), expression(w[7]), 
+                       expression(w[5]), expression(w[6]), expression(w[7]) 
                        )[select.weight], 
                      pch=pch.leg[select.weight], cex=cex)
             else            
@@ -557,11 +558,11 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                      legend=c("max-min", "L2, no bin", "L1, no bin", 
                        expression(w[1]),  expression(w[2]), 
                        expression(w[3]), expression(w[4]), 
-                       expression(w[5]), expression(w[6]), expression(w[7]), 
+                       expression(w[5]), expression(w[6]), expression(w[7])
                        )[select.weight], 
                      lty=lty.leg[select.weight], cex=cex)
           }
-          s <- apply(X[[i]][[p]][without1, , drop=FALSE], 2, mean)
+          s <- colMeans(X[[i]][[p]][without1, , drop=FALSE])
           r <- rank(s)
           if (PrintLevel>6) {
             if (i<=3) {## i.e., E1, V2, S3
@@ -624,7 +625,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     for (i in 1:length(Numbers)) {
       for (p in 1:length(pvalue)) {
         if (PrintLevel>7) print(paste(simu.fig1.ps.special[i], pvalue[p]))
-        s <- 100 * apply(Xtotal[[i]][[p]][without1, , drop=FALSE], 2, sum) /
+        s <- 100 * colSums(Xtotal[[i]][[p]][without1, , drop=FALSE]) /
           (nrow(Xtotal[[i]][[p]][without1, , drop=FALSE]) * ntot)
         ret[i, p, ] <- s
         r <- rank(s)
@@ -1372,8 +1373,8 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                   if (200 %in% simu.individ.list)
                   list(list(individ=200, add.col="\\hphantom{$V$, } $n=200$")), 
                   if (50 %in% simu.individ.list)
-                  list(list(individ=50, add.col="\\hphantom{$V$, } $n=50$")), 
-                  ),
+                  list(list(individ=50, add.col="\\hphantom{$V$, } $n=50$"))
+                  )
                 ),
 
            list(file.name = simu.models$nn$file, 
@@ -1392,7 +1393,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                 area = c(2, 4, 8)/100, 
                 null.hypo= 0, 
                 variable = list(list(EVS=1, add.col="$E$"), 
-                  list(EVS=2, add.col="$V$")), 
+                  list(EVS=2, add.col="$V$"))
                 ), 
            
            list(file.name = simu.models$var$file, 
@@ -1408,8 +1409,8 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                 list(list(individ=100, EVS=1, add.col="$E$, $n=100$",
                           null.hypo=1), 
                      list(individ=100, EVS=2, add.col="$V$, $n=100$",
-                          null.hypo=0), 
-                     ), 
+                          null.hypo=0)
+                     )
                 ), 
            
            list(file.name = simu.models$add$file, 
@@ -1455,7 +1456,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                        simu.cov = c("cubic", "gneiting"), 
                        add.col="$V$ (b) $n=50$")), 
                   list(list(individ=100, add.col="\\hphantom{(b) }$n=100$"))
-                  ),           
+                  )          
                 ), 
                  
            list(file.name = simu.models$add$file, 
@@ -1472,7 +1473,8 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                 variable =
                 c(if (50 %in% simu.individ.list)
                   list(list(individ = 50, add.col = "n=50")), 
-                  list(list(individ = 100, add.col = "n=100")), )
+                  list(list(individ = 100, add.col = "n=100"))
+                  )
                 ), 
            
            list(file.name = simu.models$add$file, 
@@ -1489,7 +1491,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                 variable =
                 c(if (50 %in% simu.individ.list)
                   list(list(individ = 50, add.col = "$n=50$")), 
-                  list(list(individ = 100, add.col = "$n=100$")), )
+                  list(list(individ = 100, add.col = "$n=100$")))
                 ), 
            list(file.name = simu.models$add$file,  
                 label = "10", 
@@ -1537,7 +1539,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                             estim.cov = c("wave"), 
                             simu.cov = c("gneiting"), 
                             add.col="E (g/w) n=50")), 
-                  list(list(individ=100, add.col="\\hphantom{(a) }n=100")), 
+                  list(list(individ=100, add.col="\\hphantom{(a) }n=100")) 
                   )
                 ), 
                 
@@ -1583,8 +1585,8 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                           estim.cov = c("wave"), 
                           simu.cov = c("gneiting"), 
                           add.col="V (g/w) n=50")), 
-                  list(list(individ=100, add.col="\\hphantom{(c) }n=100")), 
-                  ), 
+                  list(list(individ=100, add.col="\\hphantom{(c) }n=100"))
+                  )
                 )
            )
     

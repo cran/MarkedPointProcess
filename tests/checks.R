@@ -96,8 +96,8 @@ for (k in 1:1) {
   z <- NULL
   for (i in 1:3) {
     result <-  eval(parse(text=paste("res",k,"[[2]][[i]]",sep="")))
-    m <-  apply(as.double(1:100) * result$E,2,sum)
-    m2 <- apply(as.double(1:100)^2 * result$E,2,sum)
+    m <-  colSums(as.double(1:100) * result$E)
+    m2 <- colSums(as.double(1:100)^2 * result$E)
     print(m)
     print(m2)
     s   <- sqrt((m2-m * m/nn[k])/(nn[k]-1)/nn[k])
@@ -126,8 +126,8 @@ for (i in 1:20)
 sqrt(apply(E,2,var))
 sqrt(apply(E2/2,2,var))
 
-apply(E,2,mean)
-apply(E2/2,2,mean)
+colMeans(E)
+colsMenas(E2/2)
 
 
 } # EXTENDED

@@ -73,7 +73,7 @@ rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
     \item \code{data} a vector or matrix, \code{coord} contains the
     coordinates, as described above
 
-    \item \code{data=list(coord=,data=)} and \code{coord==NULL}
+    \item \code{data=list(coord=,data=)} and \code{coord=NULL}
 
     \item \code{data=list( list(coord=,data=), \ldots, list(coord=,
       data=))}; several data sets are analysed and all the results are

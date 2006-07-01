@@ -37,7 +37,7 @@ nameEfct<-NULL;
 
 couliss <- read.table(paste(data.path,"Coulissenhieb.dat",sep=""), header=T,
                       skip=3)[,3:5]
-Couliss <- as.matrix(couliss[!apply(is.na(couliss),1,sum),]) # remove NA's  
+Couliss <- as.matrix(couliss[!rowSums(is.na(couliss)),]) # remove NA's  
 nrow(Couliss) #489
 plot(Couliss[,c(1,2)])
 Dev(T,dev=dev,"Couliss.diameter.ps",width=13,height=8)
@@ -83,7 +83,7 @@ showEfct <- TRUE
 
 steiger <- read.table(paste(data.path,"Steigerwald.dat",sep=""),
                       header=T, skip=2)[, 3:6]
-steiger <- steiger[!apply(is.na(steiger),1,sum),]
+steiger <- steiger[!rowSums(is.na(steiger)),]
 steiger[,3] <- steiger[,3]/2;
 steiger <- steiger[steiger[,2]>min(steiger[,2]),] ## strange point
 Steiger<- as.matrix(steiger[,c(1:3)])

@@ -52,13 +52,13 @@ teststatistic <- function(E, Ebin, sigma, sd, col, n, rep, p) {
         weight[,3] <- sqrt(weight[,2])
         weight[,7] <- 1 ## dummy value so that apply doesn't do wrong,
         ##                 true value is set later on!
-        weight <- t(t(weight)/apply(weight[-1,], 2, sum))
+        weight <- t(t(weight)/colSums(weight[-1,]))
         ## if ((testname=="Stest") && (zaehler==-20))  print(weight)
         EE0 <-  abs(EE-E[1,repeatindex+zeroindex])  ## achtung, bins quer ---
         tEE0 <- t(EE0)                              ## achtung, bins laengs |
         ## weight == 7
-        sumsigma <- apply(1/sigma[-1,majorindex + repeatindex,drop=FALSE],2,
-                          sum, na.rm=TRUE)
+        sumsigma <- colSums(1/sigma[-1,majorindex + repeatindex,drop=FALSE],
+                            na.rm=TRUE)
         
         tSIGMA0 <- t(t(1/sigma[, majorindex+repeatindex, drop=FALSE]) / sumsigma)
                
@@ -92,13 +92,13 @@ teststatistic <- function(E, Ebin, sigma, sd, col, n, rep, p) {
           resi <- resi+1
           if (DEBUG) { print("w",w); print(gewicht*tEE0) }
           result[resi, majorindex + repeatindex] <-
-            apply(gewicht * tEE0^2, 2, sum, na.rm=T)
+            colSums(gewicht * tEE0^2, na.rm=T)
           resi <- resi+1
           result[resi, majorindex + repeatindex] <-
-            apply(gewicht * tEE0, 2, sum, na.rm=T)
+            colSums(gewicht * tEE0, na.rm=T)
           resi <- resi+1
           result[resi, majorindex + repeatindex] <-
-            apply(gewicht * t(rq), 2, sum, na.rm=T)
+            colSums(gewicht * t(rq), na.rm=T)
 ##if (w==7) print(result[resi, majorindex + repeatindex])
           resi <- resi+1
           for (s in (1:1)/10) {
@@ -108,7 +108,7 @@ teststatistic <- function(E, Ebin, sigma, sd, col, n, rep, p) {
              ind <- !is.na(r) & r >= ax
              r[ind] <- (bx * (r + ax)^2) [ind]
              result[resi, majorindex + repeatindex] <-
-               apply(gewicht * t(r), 2, sum, na.rm=T)
+               colSums(gewicht * t(r), na.rm=T)
              resi <- resi+1;           
           }
         }        
@@ -134,7 +134,7 @@ mcfR <- function(data, col, rep, p, bin, analyseresult=NULL, getEresult=NULL) {
                                     nrow=col, ncol=rep)) +
                            (0:(rep-1))*n*coltri))
   for (i in 1:n) {
-    estE[ index + (i-1)*col ] <- apply(data[[2*i]], 2, mean)
+    estE[ index + (i-1)*col ] <- colMeans(data[[2*i]])
     estSd[ index + (i-1)*col ] <- sqrt(apply(data[[2*i]], 2, var))
   }
   for (i in 1:n) {
@@ -183,7 +183,7 @@ mcfR <- function(data, col, rep, p, bin, analyseresult=NULL, getEresult=NULL) {
         for (c1 in 1:col) {
           if (length(index>0)) {
             E[b, c1 + (s2-1)*col + (s1-1)*n*col + erepindex] <-
-              apply(data[[2*s1]][index,c1+repeatindex,drop=FALSE],2,mean)
+              colMeans(data[[2*s1]][index,c1+repeatindex,drop=FALSE])
             ESIGMA[b, c1 + (s2-1)*col + (s1-1)*n*col + erepindex] <- 
               sqrt(apply(data[[2*s1]][index,c1+repeatindex,drop=FALSE],2,var))
             ## for replacement of NA by Inf see below
@@ -244,14 +244,13 @@ mcfR <- function(data, col, rep, p, bin, analyseresult=NULL, getEresult=NULL) {
         GAMBIN[b, k] <- KMMBIN[b, k] <- length(index1)
         if (length(index1 > 0)) {
           KMM[b, k + kmmrepindex] <-
-            apply(data[[2 * s1]][index1, c1 + repeatindex, drop=FALSE] *
-                  data[[2 * s2]][index2, c2 + repeatindex, drop=FALSE], 2, mean)
+            colMeans(data[[2 * s1]][index1, c1 + repeatindex, drop=FALSE] *
+                  data[[2 * s2]][index2, c2 + repeatindex, drop=FALSE])
           GAM[b, k + kmmrepindex] <-
-            apply((data[[2 * s1]][index1, c1 + repeatindex, drop=FALSE] -
+            colMeans((data[[2 * s1]][index1, c1 + repeatindex, drop=FALSE] -
                    data[[2 * s2]][index2, c1 + repeatindex, drop=FALSE]) *
                   (data[[2 * s1]][index1, c2 + repeatindex, drop=FALSE] -
-                   data[[2 * s2]][index2, c2 + repeatindex, drop=FALSE]),
-                  2, mean) / 2
+                   data[[2 * s2]][index2, c2 + repeatindex, drop=FALSE])) / 2
         }
       }
       k <- k + 1
@@ -273,12 +272,12 @@ mcfR <- function(data, col, rep, p, bin, analyseresult=NULL, getEresult=NULL) {
   vt <- teststatistic(VAR, VARBIN, VARSIGMA, sd=estSDVar, col=coltri, n=n,
                       rep=rep, p=p)
   vt.rank <- matrix(vt, nrow=nrow(vt) * coltri * n * n)
-  if (ncol(vt) > 2) vt.rank <- apply(vt[,1] >= vt, 1, sum)
+  if (ncol(vt) > 2) vt.rank <- rowSums(vt[,1] >= vt)
   
   assign("testname", "Stest", envir=.GlobalEnv)
   st <- teststatistic(SQ, SQBIN, sqrt(VARSIGMA), sd=estSDsd, col=coltri, n=n,
                       rep=rep, p=p)
-  if (ncol(st) > 2) st.rank <- apply(st[, 1] >= st, 1, sum)
+  if (ncol(st) > 2) st.rank <- rowSums(st[, 1] >= st)
   l <- list(E=E, Ebin=EBIN, ETest=et, ET=et.rank,
             VAR=VAR, VARbin=VARBIN, VARTest=vt, VT=vt.rank,
             SQ=SQ, SQbin=SQBIN, SQTest=st, SQT=st.rank,

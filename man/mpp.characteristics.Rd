@@ -27,7 +27,7 @@ mpp.characteristics(...,bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
     is the main name of the postscript files}
   \item{normalize}{logical; if \code{TRUE} the data are (marginally)
     transformed to Gaussian variables (for each species, each kind of
-    mark, and each repetition, seperately)
+    mark, and each realisation, seperately)
     before being analysed}
   \item{show}{logical; if \code{TRUE} the results are also shown
     graphically }
@@ -36,7 +36,7 @@ mpp.characteristics(...,bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
   \item{param}{the parameters for the variogram model; see
     \command{\link[RandomFields]{CovarianceFct}}}
   \item{summarize}{logical; if \code{FALSE} results are for each
-    repetition seperately (instead of being averaged over the repetitions).} 
+    realisation seperately (instead of being averaged over the realisations).} 
   \item{PrintLevel}{0,1 or 2. The function gives some short messages if
     \code{PrintLevel} is 1 or 2.}
   \item{rdline}{\code{NULL} or function.

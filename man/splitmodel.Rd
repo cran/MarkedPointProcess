@@ -52,7 +52,7 @@ str(splitmodel(list(list(model="nearest neighbour", param=4))))
 
 str(splitmodel(list(list(model="exp", var=5, scale=3),
                     "+",
-                    list(model="nearest neighbour", param=4),
+                    list(model="nearest neighbour", param=4)
                     )))
 
 str(splitmodel(list(list(model="exp", var=5, scale=3),

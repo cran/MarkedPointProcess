@@ -4,7 +4,9 @@
 ## check why V fucntion goes crazy -- as mentioned in the SRD-Paper
 ###########################################################################
 
-.ENV <- environment()
+#
+.ENV <- environment(NULL)
+#.ENV <- baseenv()
 #.ENV <- .GlobalEnv
 
 ## basic initializations in R
@@ -430,7 +432,7 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
         null.sl[[i]] <- matrix(nrow=length(pvalue), ncol=.mpp.tests)
         for (p in 1:length(pvalue)) {
           abspvalue <- (1 - pvalue[p] / 100) * n.hypo
-          null.sl[[i]][p,] <- apply(rate <= abspvalue, 2, sum) + 1 #
+          null.sl[[i]][p,] <- colSums(rate <= abspvalue) + 1 #
         }
    
         ## second: comparison with the estimated significance levels for the data
@@ -612,15 +614,15 @@ mpp.characteristics <- function(...,
   eval(parse(text=text))
 
   if (summarize && (rep>1)) {
-    E <- apply(matrix(E, ncol=rep), 1, mean)
-    ETest <- apply(matrix(ETest, ncol=rep), 1, mean)
-    VAR <- apply(matrix(VAR, ncol=rep), 1, mean)
-    VARTest <- apply(matrix(VARTest, ncol=rep), 1, mean)
-    SQ <- apply(matrix(SQ, ncol=rep), 1, mean)
-    SQTest <- apply(matrix(SQTest, ncol=rep), 1, mean)
-    KMM <- apply(matrix(KMM, ncol=rep), 1, mean)
-    GAM <- apply(matrix(GAM, ncol=rep), 1, mean)
-    ## MAXTest <- apply(matrix(,ncol=rep), 1, mean)
+    E <- rowMeans(matrix(E, ncol=rep))
+    ETest <- rowMeans(matrix(ETest, ncol=rep))
+    VAR <- rowMeans(matrix(VAR, ncol=rep))
+    VARTest <- rowMeans(matrix(VARTest, ncol=rep))
+    SQ <- rowMeans(matrix(SQ, ncol=rep))
+    SQTest <- rowMeans(matrix(SQTest, ncol=rep))
+    KMM <- rowMeans(matrix(KMM, ncol=rep))
+    GAM <- rowMeans(matrix(GAM, ncol=rep))
+    ## MAXTest <- rowMeans(matrix(,ncol=rep))
     rep <- 1
   }
 
