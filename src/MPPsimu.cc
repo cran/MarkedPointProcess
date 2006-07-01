@@ -94,7 +94,11 @@ void randomcoins(double *x, double *y, int *lx, double *px, double *py, int *lp,
     rsq = r * r; 
     for (k=0; k<*lx; k++){
       for(i=0;i<*lp;i++){
-	if ((xx=x[k]-px[i]) * xx + (xx=y[k]-py[i])*xx<rsq) {res[k]+=1.0;}
+	xx = x[k]-px[i];
+	yy = y[k]-py[i];
+	if (xx * xx + yy*yy < rsq) {res[k]+=1.0;}
+//	printf("i=%d k=%d x=%3.2f px=%f y=%3.2f py=%f %f r2=%f %f \n",
+//	       i,k, x[k], px[i],  y[k], py[i], xx * xx + yy*yy, rsq, res[k]);
       }
     }
     break;
