@@ -35,7 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define PRECISION 1E-11
 
 void nearestneighbour(double *x, double *y, int *lx, double *px, double *py,
-		      int *lp, double *param, double *nnd) 
+		      int *lp, double *param, double *nnd) {
        /* x,y : coord. of the points where the nearest neighbour distances   
 		are to be calculated (excluding the point itself)
 	  lx  : number of points
@@ -44,21 +44,19 @@ void nearestneighbour(double *x, double *y, int *lx, double *px, double *py,
 	  nnd : nearest neighbour distance; nnd is a vector of length lx
 	  nnd == -1 if there is no nearest neighbour
        */   
-{ 
-  int k;
-  {
-    register int i, j;
-    register double dist, mindist;
+    int i, j;
+    double  mindist;
     for (i=0;  i<*lx; i++){
       mindist = RF_INF;
       for (j=0; j<*lp; j++){
-	if (((dist=(dist=x[i]-px[j]) * dist+(dist=y[i]-py[j]) * dist)<mindist)
-	    && (dist>0)) {mindist=dist;};
+	double
+	  d1 = x[i]-px[j],
+	  d2 = y[i]-py[j],
+	  dist = d1 * d1 + d2 * d2;
+	if (dist<mindist && dist>0) {mindist=dist;}
       };
-      nnd[i]=mindist; 
-    };
-  }
-  for (k=0;  k<*lx; k++) {nnd[k] = sqrt(nnd[k]) * param[NN_FACTOR];}
+      nnd[i]=sqrt(mindist) * param[NN_FACTOR];
+    }
 } 
 
 
