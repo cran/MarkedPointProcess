@@ -77,8 +77,8 @@ splitmodel <- function(model) {
                               ) }))))
     ## prevents that names are not given uniquely; e.g. model="n"
     ## could mean "nearest neighbour" or "nugget"
-    stop(paste("operators not correct, or model names not unique within {",
-               paste(all.names,collapse=", "),"}"))
+    stop("operators not correct, or model names not unique within {",
+         paste(all.names,collapse=", "),"}")
   n <- sapply(model, function(x) ifelse(is.list(x), pmatch(x$m, model.names), NA))
   index <- !is.na(n)
   index.op <- c(index[-1],FALSE) | c(FALSE,index[-length(index)])
@@ -207,7 +207,7 @@ simulateMPP <- function(coordmodel=c("given", "uniform", "Poisson"),
        as.integer(PrintLevel),
        error, PACKAGE="MarkedPointProcess", DUP=FALSE)
 
-    if (error!=0) stop(paste("Error in simulateMPP", error))
+    if (error!=0) stop("Error in simulateMPP ", error)
     ## IMPORTANT! if coordmodel is 2, then actual and physical act.npoints do
     ## not match; however matching is needed in the following steps
 
@@ -399,7 +399,7 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
            ##               in mcf_internal
            PACKAGE="MarkedPointProcess", DUP=FALSE, NAOK=TRUE
            )
-          if (error) stop(paste("error ",error))
+          if (error) stop("error ", error)
       } # MCrep > 0
     } # ncol Data
   } ## 1..length(data)
