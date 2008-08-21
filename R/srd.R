@@ -119,16 +119,16 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                         intrinsic.var=function(lbRd) 1 + lbRd * (3 + lbRd))
                       )
   ENV <- new.env(parent = baseenv())
-  assign(env=ENV, "simu.completename",
-    function(basicname, variance) paste(basicname, variance * 100, sep="."))
-  assign(env=ENV, "simu.addname",
+  simu.completename <- 
+    function(basicname, variance) paste(basicname, variance * 100, sep=".")
+  simu.addname <- 
     function(basic.name, estimate, simulate, MCmodel, gauss.model,
              radius, scale, individ)
       paste(basic.name, estimate, simulate, MCmodel, gauss.model, 
-            radius*100, scale *100, individ, sep="."))
-  assign(env=ENV, "simu.nnname",
-         function(scale, x, y, individ)
-         paste(simu.models$nn$file, scale * 100, round(x*y), individ, sep="."))
+            radius*100, scale *100, individ, sep=".")
+  simu.nnname <- 
+    function(scale, x, y, individ)
+      paste(simu.models$nn$file, scale * 100, round(x*y), individ, sep=".")
   simu.name.EVS <- c("E", "V", "S")
   simu.MCrep <- 99  ## function not tested for simu.MCrep != 99 !!
 
@@ -291,7 +291,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
  
   plot.fig1 <- function(name, npoints,
                         gauss.variance=simu.gauss.variance, 
-                        Title="", 
+                        Title = "", 
                         pvalue=c(90, 95), ## werden hier neu berechnet, und
                         ## nicht von rfm.test uebernommen
                         ps=NULL, 
@@ -591,7 +591,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
       } ## i
     } ## print.data <- function(){...
     
-    titleblock <- basicblock <- forblock <- forendblock <- "";
+    titleblock <- basicblock <- forblock <- forendblock <- Titel <- "";
     for (i in 1:length(args)) {
       titleblock <-
         paste(titleblock, '"  ', names(args)[i], '=", args.', i, ', ', sep="")
@@ -607,7 +607,8 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     titleblock <-
       paste('Titel <- paste(Title, ", ", ', titleblock, 'sep="");', sep="");
     if (PrintLevel>7) {print(titleblock);  print(basicblock);  print(forblock)}
-    
+
+    basicname <- psbasicname <- NULL
     for (ind in npoints) { ##????
       BASICblock <- paste('basicname <- paste(name, ".", ', basicblock,
                           'ind, ".", sep="");', sep="")
