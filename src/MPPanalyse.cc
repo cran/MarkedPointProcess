@@ -424,7 +424,7 @@ int mcf_internal(double *E, double *ETEST, int *EBIN,
   */
   for (i=0; i<n; i++) {ROWcol[i] =  ROW[i] * col;}
   for (end=col, var_l=l=0, i=0; i<n; i++, end += col) {
-    intsqrtn= (int) (sqrt(ROW[i])+INT_EPSILON);// sqrt(n) classes
+      intsqrtn= (int) (sqrt((double) ROW[i])+INT_EPSILON);// sqrt(n) classes
     member = ROW[i] / intsqrtn;               // with about sqrt(n) elements each
     if ( ((classes = (int*) malloc(sizeof(int) * (intsqrtn+1))) == NULL) ||
 	 ((pos = (double*) malloc(sizeof(double) * ROW[i])) == NULL) ||

@@ -54,6 +54,23 @@ void MPPErrorMessage(int error) {
 }
 
 
+void Inearestneighbour(double *x, double *y, int *lx, double *px, 
+		  double *py, int *lp, double *param, double *nnd) {
+    nearestneighbour(x, y, lx, px, py, lp, param, nnd);
+}
+
+void Irandomcoins(double *x, double *y, int *lx, double *px, double *py, 
+		  int *lp, double *param, double *res) {
+    randomcoins(x, y, lx, px, py, lp, param, res);
+}
+
+void Irandomvariance(double *x, double *y, int *lx, double *px, 
+			   double *py, int *lp, double *param, double *res) {
+    randomvariance(x, y, lx, px, py, lp, param, res);
+}
+
+
+
 void InitMPPModelList()
 {
 
@@ -63,19 +80,19 @@ void InitMPPModelList()
 
     strncpy(mpp_model[currentmppNr].name, "nearest neighbour", MPP_MAXCHAR-1);
     mpp_model[currentmppNr].nparam = NN_MAX; 
-    mpp_model[currentmppNr].fct = nearestneighbour;
+    mpp_model[currentmppNr].fct = Inearestneighbour;
     assert(currentmppNr<MPP_MODELS); 
     currentmppNr++;
 
     strncpy(mpp_model[currentmppNr].name, "random coins", MPP_MAXCHAR-1);
     mpp_model[currentmppNr].nparam = RC_MAX; 
-    mpp_model[currentmppNr].fct = randomcoins;
+    mpp_model[currentmppNr].fct = Irandomcoins;
     assert(currentmppNr<MPP_MODELS); 
     currentmppNr++;
 
     strncpy(mpp_model[currentmppNr].name, "variance by coins", MPP_MAXCHAR-1);
     mpp_model[currentmppNr].nparam = RC_MAX; 
-    mpp_model[currentmppNr].fct = randomvariance;
+    mpp_model[currentmppNr].fct = Irandomvariance;
     assert(currentmppNr<MPP_MODELS); 
     currentmppNr++;
 
