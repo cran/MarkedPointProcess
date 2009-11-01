@@ -60,7 +60,7 @@ rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
   \item{Barnard}{test by Barnard (1963) on the independence of marks}
   \item{PrintLevel}{If zero then no messages are printed. The higher the
   value the more tracing information is given.}
-  \item{...}{any parameter for \command{\link[RandomFields]{variofit}}
+  \item{...}{any parameter for \command{\link[RandomFields]{fitvario}}
     can be passed,
     except for \code{x}, \code{y}, \code{z}, \code{T}, \code{data},
     \code{model}, \code{param}, \code{mle.methods} and

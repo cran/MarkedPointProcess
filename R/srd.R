@@ -1146,10 +1146,13 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
         return(res)
       }
       gam <- (1 - exp(-lambda * pi * x^2) ) / (lambda * pi)
+      
       for (i in 1:length(x)) {
-        a <- adapt(2, lower=c(0, 0), upper=c(x[i], x[i]), min=100, max=1000, 
-                   fun=function(st) exp(-lambda * U(x[i], st[1], st[2])), 
-                   eps=0.01)
+        a <- if (FALSE)
+          adapt(2, lower=c(0, 0), upper=c(x[i], x[i]), min=100, max=1000, 
+                fun=function(st) exp(-lambda * U(x[i], st[1], st[2])), 
+                eps=0.01)  else NA
+        if (PrintLevel > 0) cat("R package adapt is not available anymore;\n so nn.G cannot be calculated anymore\n")
         gam[i] <- gam[i] - a$value
       }
       return(gam)
@@ -1796,7 +1799,8 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                    "\ndetails.\n")
              } else plotdata(data=data[c(2,3)]) # biondi only
            }, {
-             if (!require(adapt)) next
+             # if (!require(adapt)) next
+             cat("R package adapt is no longer available. So this part does not work anymore\n")
              theoretical.examples()
            }, {
              try(latex())     

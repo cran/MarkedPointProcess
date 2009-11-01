@@ -1,4 +1,3 @@
 exportPattern("^[^\\.]")
 import(RandomFields)
-#importFrom(adapt, adapt)
 useDynLib(MarkedPointProcess)
