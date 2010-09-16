@@ -293,7 +293,8 @@ rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
 \seealso{\command{\link{mpp.characteristics}}, \command{\link{simulateMPP}} }
 
 \examples{
-%  library(MarkedPointProcess, lib="~/TMP")
+%  library(MarkedPointProcess, lib="~/TMP"); source("/home/schlather/R/MPP/MarkedPointProcess/tests/source.R");source("/home/schlather/R/RF/RandomFields/tests/source.R")
+
 data(BITOEK)
 d <- steigerwald
 plotWithCircles(cbind(d$coord, d$diam), factor=2)

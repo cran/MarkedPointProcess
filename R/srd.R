@@ -4,8 +4,8 @@
 ##########################################################################
 
 srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE,
-                      ps.path="ps/", data.save.path="data/", simu.path="simu/",
-                      tex.path="tex/", biondi.etal=NULL,
+                      ps.path="ps", data.save.path="data", simu.path="simu",
+                      tex.path="tex", biondi.etal=NULL,
                       final=TRUE
                       ) {
   on.exit(traceback())
@@ -148,7 +148,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     if (file.exists(name)) stopifnot(file.info(name)$isdir)
     else stopifnot(dir.create(name))
     if (substr(name, nchar(name), nchar(name)) != "/")
-      assign(n, paste(name,  "/", sep=""))
+      assign(n, paste(name, "/", sep=""))
   }
   
   assign(#env=ENV,

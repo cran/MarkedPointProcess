@@ -256,8 +256,10 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
   RFparameters(Storing=TRUE, PrintLevel=PrintLevel)
   
   stopifnot(n.hypo>1)
-  if (PrepareModel(MCmodel)$anisotropy)
-    stop("anisotropic models are not allowed (yet)")
+  if(is.null(MCmodel$param))
+    stop("complex models, in particular anisotropic models, are not allowed (yet)")
+   
+  
   ## coord : coordinates
   ##         NULL  : full information is given by data==list(list(coord,data))
   ##         matrix: single data=marks set to analyse
@@ -495,6 +497,7 @@ mpp.characteristics <- function(...,
                                 bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
                                 show=FALSE, model=NULL, param=NULL,
                                 summarize=TRUE,
+                                xunit="m", yunit="cm", pch=16,
                                 PrintLevel=RFparameters()$Print,
                                 dev=if (name=="") 2 else FALSE,
                                 rdline=if (is.logical(dev)) NULL else readline,
@@ -595,7 +598,7 @@ mpp.characteristics <- function(...,
   ## investigate if all the data have the same number of columns; if not, stop
   ## and if divisible by rep
 
-  print(list(rep , n^2, col ,nbins))
+#  print(list(rep , n^2, col ,nbins))
   
   E <- double(rep * n^2 * col * nbins)
   ETest <- double(rep * n^2 * col * .mpp.tests)
@@ -660,15 +663,14 @@ mpp.characteristics <- function(...,
     k <- 1;
     l <- 1
     rangebin <- c(0,bin[length(bin)])
-    ps <- paste(name, "Ebin.ps", sep=".")
+    ps <- paste(name, "Ebin", sep="_")
     Dev(TRUE, dev, ps=ps)
-    
-    plot(midbin, Ebin[, 1], xlab="distance r", ylab="n")
+    plot(midbin, Ebin[, 1], xlab="distance r", ylab="n", pch=pch)
     Dev(FALSE, dev)
     if (!is.null(rdline)) rdline(ps)
-    ps <- paste(name, "VARbin.ps", sep=".")
+    ps <- paste(name, "VARbin", sep="_")
     Dev(TRUE, dev, ps=ps)
-    plot(midbin, VARbin[, 1], xlab="distance r", ylab="n")
+    plot(midbin, VARbin[, 1], xlab="distance r", ylab="n", pch=pch)
     Dev(FALSE, dev)    
     for (i in 1:n) { #species i
       segmentE <- (i - 1) * (col * n + 1) 
@@ -683,14 +685,20 @@ mpp.characteristics <- function(...,
           ylab <- paste(ylab,"r)",sep="")
           for (r in ((0:(rep-1)) * col * n * n)){
             if (!is.null(rdline)) rdline(ps)
-            ps <- paste(name, "E", i, j, cc, "ps", sep=".")
+            ps <- paste(name, "E", i, j, cc, sep="_")
             Dev(TRUE, dev, ps=ps
                 , height=5, width=8 ####
                 )
+
+             
             plot(midbin, E[, k + r],
     #             xlab="distance r", ylab=ylab
-                 xlab="Distanz h [m]", ylab="E(h) [cm]", col="red", cex=1.5 ####
-                 )
+                 xlab=paste("Distanz h [", xunit, "]", sep=""),
+                 ylab=paste("E(h) [", yunit, "]", sep=""),
+                 col="red", cex=1.5, ####
+                 pch=pch)
+
+            
             lines(rangebin, c(E[1, r + segmentE + cc],
                               E[1, r + segmentE + cc]), lty=3
                   , col="green" ####
@@ -712,9 +720,9 @@ mpp.characteristics <- function(...,
             
             for (r in ((0:(rep-1)) * col2 * n * n)){
              if (!is.null(rdline)) rdline(ps)
-             ps <- paste(name, "V", i, j, cc, "ps", sep=".")
-             Dev(TRUE, dev, ps=ps)
-              plot(midbin,VAR[, l+r],xlab="distance r",ylab=ylab)
+             ps <- paste(name, "V", i, j, cc, sep="_")
+            Dev(TRUE, dev, ps=ps)
+              plot(midbin,VAR[, l+r],xlab="distance r",ylab=ylab, pch=pch)
               lines(rangebin,c(VAR[1, r+segmentV + l - ll + 1],
                                VAR[1, r+segmentV + l - ll + 1]), lty=3)
               Dev(FALSE, dev)
@@ -733,9 +741,9 @@ mpp.characteristics <- function(...,
             
             for (r in ((0:(rep-1)) * col2 * n * n)){
               if (!is.null(rdline)) rdline(ps)
-              ps <- paste(name, "SQ", i, j, cc, "ps", sep=".")
+              ps <- paste(name, "SQ", i, j, cc, sep="_")
               Dev(TRUE, dev, ps=ps)
-              plot(midbin, SQ[, l + r], xlab="distance r", ylab=ylab)
+              plot(midbin, SQ[, l + r], xlab="distance r", ylab=ylab, pch=pch)
               lines(rangebin,c(SQ[1, r + segmentV + l - ll + 1],
                                SQ[1, r + segmentV + l - ll + 1]),
                     lty=3)
@@ -748,9 +756,9 @@ mpp.characteristics <- function(...,
     } # i
     
     if (!is.null(rdline)) rdline(ps)
-    ps <- paste(name, "KMMbin.ps", sep=".")
+    ps <- paste(name, "KMMbin", sep="_")
     Dev(TRUE, dev, ps=ps)
-    plot(midbin, KMMbin[, 1], xlab="distance r", ylab="n")
+    plot(midbin, KMMbin[, 1], xlab="distance r", ylab="n", pch=pch)
     Dev(FALSE, dev)    
     k <- 1;
     for (i in 0:(n*col-1)) {
@@ -769,21 +777,24 @@ mpp.characteristics <- function(...,
         
         for (r in ((0:(rep-1))*colsum2)){
           if (!is.null(rdline)) rdline(ps)
-          ps <- paste(name,"K",spec1,spec2,col1,col2,"ps",sep=".")
-          Dev(TRUE, dev, ps=ps)
-          plot(midbin,KMM[,k+r],xlab="distance r",ylab=paste("KMM",ylab,sep=""))
+          ps <- paste(name,"K",spec1,spec2,col1,col2, sep="_")
+         Dev(TRUE, dev, ps=ps)
+          plot(midbin,KMM[,k+r],xlab="distance r",ylab=paste("KMM",ylab,sep=""),
+               pch=pch)
           Dev(FALSE, dev)
         }        
         for (r in ((0:(rep-1))*colsum2)){
           if (!is.null(rdline)) rdline(ps)
-          ps <- paste(name,"G",spec1,spec2,col1,col2,"ps",sep=".")
+          ps <- paste(name,"G",spec1,spec2,col1,col2, sep="_")
           Dev(TRUE, dev, ps=ps
               , height=5, width=8 ####
               )
           plot(midbin, GAM[,k+r],
                #xlab="distance r", ylab=paste("gamma", ylab, sep="")
-               xlab="Distanz r [m]", ylab=expression(gamma(r) * " [cm^2]"),
-               col="red", cex=1.5 ###
+               xlab=paste("Distanz r [", xunit, "]", sep=""),
+               ylab=expression(gamma(r) *
+                   " [" * yunit^2 * "]"),
+               col="red", cex=1.5, pch=pch ###
                )
           if (!is.null(model)) {
             xx <- seq(max(midbin)/100000,max(midbin),l=length(midbin)*4);
@@ -793,10 +804,10 @@ mpp.characteristics <- function(...,
         }        
         for (r in ((0:(rep-1))*colsum2)){
           if (!is.null(rdline)) rdline(ps)
-          ps <- paste(name, "GvsK", spec1, spec2, col1, col2,"ps",sep=".")
+          ps <- paste(name,"GvsK",spec1,spec2,col1,col2, sep="_")
           Dev(TRUE, dev, ps=ps)
           plot(KMM[,k+r],GAM[,k+r],xlab=paste("KMM",ylab,sep=""),
-              ylab=paste("gamma",ylab,sep=""))
+              ylab=paste("gamma",ylab,sep=""), pch=pch)
           Dev(FALSE, dev)
          }        
         k <- k+1

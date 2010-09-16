@@ -8,6 +8,7 @@
 \usage{
 mpp.characteristics(...,bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
                     show=FALSE, model=NULL, param=NULL, summarize=TRUE,
+                    xunit="m", yunit="cm", pch=16,
                     PrintLevel=RFparameters()$Print,
                     dev=if (name=="") 2 else FALSE,
                     rdline=if (is.logical(dev)) NULL else readline,
@@ -36,7 +37,11 @@ mpp.characteristics(...,bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
   \item{param}{the parameters for the variogram model; see
     \command{\link[RandomFields]{CovarianceFct}}}
   \item{summarize}{logical; if \code{FALSE} results are for each
-    realisation seperately (instead of being averaged over the realisations).} 
+    realisation seperately (instead of being averaged over the
+    realisations).} 
+  \item{xunit}{string; unit in x-direction of the plots}
+  \item{yunit}{string; unit in y-direction of the plots}
+  \item{pch}{shape of plotted dots}
   \item{PrintLevel}{0,1 or 2. The function gives some short messages if
     \code{PrintLevel} is 1 or 2.}
   \item{rdline}{\code{NULL} or function.

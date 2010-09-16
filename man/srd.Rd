@@ -8,8 +8,8 @@
 }
 \usage{
 srd.jrssb(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE,
-          ps.path="ps/", data.save.path="data/", simu.path="simu/",
-          tex.path="tex/", biondi.etal=NULL, final=TRUE)
+          ps.path="ps", data.save.path="data", simu.path="simu",
+          tex.path="tex", biondi.etal=NULL, final=TRUE)
 }
 
 \arguments{

@@ -800,7 +800,7 @@ int mcf_internal(double *E, double *ETEST, int *EBIN,
 		  PRINTF("--> %e > %e [%e %e]\n",
 			 (double) XX, (double) (- XXtolerance * dummy * dummy),
 			 (double)XXtolerance, (double) dummy);
-		  assert(false);
+		  //assert(false);
 		}
 		XX=0;
 	      }
