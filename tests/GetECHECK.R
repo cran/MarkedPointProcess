@@ -1,4 +1,4 @@
-## source("GetECHECK.R")
+##   library(MarkedPointProcess, lib="~/TMP"); options(warn=2); source("/home/schlather/R/MPP/MarkedPointProcess/tests/GetECHECK.R")
 if (EXTENDED.TESTING <- file.exists(f <- "CHECK.R")) source(f) else 
 if (file.exists(f <- "~/R/MPP/MarkedPointProcess/tests/CHECK.R")) source(f) else
 q()

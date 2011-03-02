@@ -89,7 +89,7 @@ srd.jrssb(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE,
   \emph{Can. J. Forest Res.} \bold{24}, 1354-1368.
 }
 \author{Martin Schlather, \email{martin.schlather@math.uni-goettingen.de}
-  \url{http://www.stochastik.math.uni-goettingen.de/institute}}
+  \url{http://www.stochastik.math.uni-goettingen.de/~schlather}}
 
 \seealso{ \command{\link{rfm.test}}, \command{\link{simulateMPP}},
   \code{\link{MarkedPointProcess}}

@@ -9,9 +9,8 @@
 %  contrast to the assumption in the Barnard-Besag-Diggle test)
 }
 \usage{
-rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,  
-         MCmodel=list(model="exponential",
-           param=c(mean=0,variance=NA,nugget=0,scale=NA)),
+rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
+         MCmodel=list("$", var=NA, scale=NA, list("exponential")),  
          method=NULL,
          bin=c(-1,seq(0,1.2,l=15)), MCregister=1, n.hypo=1000,
          pvalue=c(10, 5, 1), tests="l1 & w3",
@@ -289,7 +288,7 @@ rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
   \emph{J. R. Statist. Soc., Ser. B} \bold{66}, 79-83.
 }
 \author{Martin Schlather, \email{martin.schlather@math.uni-goettingen.de}
-  \url{http://www.stochastik.math.uni-goettingen.de/institute}}
+  \url{http://www.stochastik.math.uni-goettingen.de/~schlather}}
 \seealso{\command{\link{mpp.characteristics}}, \command{\link{simulateMPP}} }
 
 \examples{

@@ -25,10 +25,10 @@ if (EXTENDED.TESTING) {
   coordmodels <- c("Poisson")
 }
 
-model <- 'list(list(model="expon", var=gv, scale=gs), "+",\
-               list(model="random coins", param=c(1, ar, ah)))'
-compare.model <- 'list(list(model="expon", var=gv, scale=gs), "+",\
-                       list(model="circ", var=(sill-gv), scale=2 * ar))'
+model <- 'list("+", list("$", var=gv, scale=gs, list("expon")),\
+               list("random coins", param=c(1, ar, ah)))'
+compare.model <- 'list("+", list("$", var=gv, scale=gs, list("expon")), \
+                       list("$", var=(sill - gv), scale=2 * ar, list("circ")))'
 
 
 unit <- 2

@@ -323,17 +323,17 @@ Delta <- function(data, col, rep, bin, p=0.8, n=NULL, npoints=NULL,
     x <- simulateMPP(npoints=npoints, coordrepet=n, window=window,
                       lambda=lambda, edgecorrection=edgecorrection,
                       coordmodel=coordmodel, repetitions=rep*col,
-                      model = list(list(model=cov.model, var=1, scale=1)) )
+                      model = list("$", var=1, scale=1, list(cov.model)) )
   norm <- function(x) {qnorm((rank(x)-0.5)/length(x))}
    if (n==1) {
-      if (any(apply(x$data,2,var))==0) pos.variance <- FALSE
+      if (any(apply(x$data,2,var)==0)) pos.variance <- FALSE
       else  x$data <- apply(as.matrix(x$data),2,norm)
       data <- x
      }
     else {
       data <- list();
       for (i in 1:length(x)) {
-        if (any(apply(x[[i]]$data,2,var))==0) pos.variance <- FALSE
+        if (any(apply(x[[i]]$data,2,var)==0)) pos.variance <- FALSE
         else x[[i]]$data <- apply(as.matrix(x[[i]]$data),2,norm)
         data <- c(data, x[[i]])
       }
@@ -462,6 +462,9 @@ DeltaMC <- function(data=NULL, rep, bin, n, MCrep,
     seed <- get(".Random.seed", envir=.GlobalEnv, inherits = FALSE)
     save(file=seedfile, seed)
   }
+
+  .basisMPP(environment(NULL))
+  
     
   p <- 0.7 ## values as defined in MCtest
 
@@ -476,7 +479,7 @@ DeltaMC <- function(data=NULL, rep, bin, n, MCrep,
       simulateMPP(npoints=npoints, coordrepet=n, window=window,
                    edgecorrection=edgecorrection, lambda=lambda,
                    coordmodel=coordmodel, repetitions=rep,
-                   model = list(list(model=model,  var=1, scale=1)) )
+                   model = list(model))
     if (n==1) data <- list(data)
   }
   ## rfm.test(data=data, normalize=FALSE, MCrep=MCrep,
@@ -512,7 +515,7 @@ DeltaMC <- function(data=NULL, rep, bin, n, MCrep,
       } else {
         GaussRF(x=data[[r]]$coord, grid=FALSE,
                 model=fitvario(x=data[[r]]$coord, data=Data[,i], model=model,
-                  param=param[,r], sill=sill)$variogram$ml,
+                  param=param[,r], sill=sill)$ml$model,
                 register=2, n=MCrep)
       }
       storage.mode(simuresult) <- "double"

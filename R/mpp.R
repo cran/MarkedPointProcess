@@ -4,117 +4,134 @@
 ## check why V fucntion goes crazy -- as mentioned in the SRD-Paper
 ###########################################################################
 
-#
-.ENV <- environment(NULL)
-#.ENV <- baseenv()
-#.ENV <- .GlobalEnv
 
 ## basic initializations in R
-assign(".mpp.maxtests",
-       as.integer(t(as.matrix(expand.grid(c(12,20,14,18,23,27),
-                                          c(12,13,21,22,30,31))))), env=.ENV)
-assign(".mpp.nr.maxtests", as.integer(length(.mpp.maxtests) / 2), env=.ENV)
-assign(".mpp.digits", 3, env=.ENV)
-assign(".mpp.lpnames", c("max", "l2", "l1", "robust", "anti"), env=.ENV)
-assign(".mpp.weightnames", c("const", "1/sum#", "sqrt(1/sum#)", "1/sumsqrt#",
-                             "#", "sqrt#", "1/sd") , env=.ENV)
-assign(".mpp.extranames", c("range", "no.bin.sq", "no.bin.abs"), env=.ENV)
+
+.basisMPP <- function(ENV) {
+  assign(".mpp.maxtests",
+         as.integer(t(as.matrix(expand.grid(c(12,20,14,18,23,27),
+                                            c(12,13,21,22,30,31))))), env=ENV)
+  assign(".mpp.nr.maxtests",
+         as.integer(length(get(".mpp.maxtests", env=ENV)) / 2), env=ENV)
+  assign(".mpp.digits", 3, env=ENV)
+  assign(".mpp.lpnames", c("max", "l2", "l1", "robust", "anti"), env=ENV)
+  assign(".mpp.weightnames", c("const", "1/sum#", "sqrt(1/sum#)", "1/sumsqrt#",
+                               "#", "sqrt#", "1/sd") , env=ENV)
+  assign(".mpp.extranames", c("range", "no.bin.sq", "no.bin.abs"), env=ENV)
+}
 
 .onLoad <- function (lib, pkg) {
   if (file.exists("/home/schlather/bef/x")) {
     ## to-do list -- since my surname is rare, the message should 
     ## appear only on computers I have a login
-    cat("To-Do List\n==========\n")
-
-
-
-    print(" mpp antrittsvorlesung: raus")
+    ## cat("To-Do List\n==========\n")
     
   }
- 
-  ##  dummy <- .C("GetmppParameters", lnorms=integer(1), weights=integer(1),
-  ##               tests=integer(1), mppmaxchar=integer(1), modelnr=integer(1),
-  ##               PACKAGE="MarkedPointProcess", DUP=FALSE)
-  ## .mpp.l.norms <- dummy$lnorms
-  ## .mpp.weights <- dummy$weights
-  ## .mpp.tests <- dummy$tests
-  ## .mpp.maxchar <- dummy$mppmaxchar
-  ## .mpp.models <- dummy$modelnr
-  
-  ## see also tests/CHECK.R for GetmppParameters !!
-  ##
-  #  assign("..ENV", .ENV, envir=.ENV)
 }
 
 get.mpp.names <- function() {
   dummy <- .C("GetmppParameters", lnorms=integer(1), weights=integer(1),
                      tests=integer(1), mppmaxchar=integer(1), modelnr=integer(1),
                      PACKAGE="MarkedPointProcess", DUP=FALSE)
-  .mpp.models <- dummy$modelnr
-  .mpp.maxchar <- dummy$mppmaxchar
+  mpp.models <- dummy$modelnr
+  mpp.maxchar <- dummy$mppmaxchar
   l <- NULL;
-  for (i in 1:.mpp.models) {
+  for (i in 1:mpp.models) {
     l[i] <- .C("GetMPPModelName", as.integer(i-1),
-               n=paste(rep(" ", .mpp.maxchar), collapse=""),
+               n=paste(rep(" ", mpp.maxchar), collapse=""),
                PACKAGE="MarkedPointProcess")$n
   }
   return(l) 
 }
 
-splitmodel <- function(model) {
-  if (missing(model) || (length(model)==0)) return(list(RF=list(),mpp=list()))
-  op.list <- c("+", "*")
+splitmodel <- function(model, trend=NULL) {
+  if (missing(model) || (length(model)==0))
+    return(list(RF=list(),mpp=list(), mean=NULL, tren=NULL))
   model.names <- get.mpp.names()
   all.names <- c(model.names, GetModelNames())
+  stopifnot(is.list(model))
 
-  trend <- model$trend
-  mean <- model$mean
-  model$trend <- model$mean <- NULL
-  if (any(is.na(sapply(model, function(x) {
-                        ifelse(is.list(x),
-                               pmatch(x$m, all.names),
-                               pmatch(x, op.list)
-                              ) }))))
-    ## prevents that names are not given uniquely; e.g. model="n"
-    ## could mean "nearest neighbour" or "nugget"
-    stop("operators not correct, or model names not unique within {",
-         paste(all.names,collapse=", "),"}")
-  n <- sapply(model, function(x) ifelse(is.list(x), pmatch(x$m, model.names), NA))
-  index <- !is.na(n)
-  index.op <- c(index[-1],FALSE) | c(FALSE,index[-length(index)])
-  ## immer noch nicht 100% geprueft:
-  RF <- model[!index.op]
-  RF[index[!index.op]] <- "+"
-  if ((length(RF)>0) && (RF[[1]]=="+"))  RF <- RF[-1]
-  if ((length(RF)>0) && (RF[[length(RF)]]=="+")) RF <- RF[-length(RF)]
-  if ((length(model)>1) &&
-      any(unlist(model[index.op | c(FALSE,index[-length(index)])])!="+"))
-    stop("marked point process models can be combined only additively") 
-  mpp <- list()
-  if (!(all(is.na(n)))) {
-   n <- n[!is.na(n)] - 1
-   np <-  integer(length(n))
-    .C("GetNrMPPParameters", as.integer(n), as.integer(length(n)), np,
-       PACKAGE="MarkedPointProcess", DUP=FALSE)
-    model <- model[index]
+  Print(model, names(model),
+        model[[1]]=="+", is.logical(names(model)[1]==""),
+        (is.character(model[[1]]) && names(model)[1]==""))
+
+  if (model[[1]]=="+" || (is.character(model[[1]]) &&
+                          (is.null(names(model)) || names(model)[1]==""))) {
+    if (model[[1]] == "+") model <- model[-1]
+    else model <- list(model)
+    RF <- mpp <- list()
     for (i in 1:length(model)) {
-      if (length(model[[i]]$p)!=np[i]){
-        print(c(length(model[[i]]$p),i,np[i]))
-        stop("number of parameters incorrect")
+      if (is.na(pmatch(model[[i]][[1]], all.names))) {
+#        Print(all.names)
+        stop(paste("model name '", model[[i]][[1]], "' ambiguous", sep=""))
       }
-      mpp[[i]] <- list(model=model[[i]]$m, param=model[[i]]$p, mnr=n[i])
+      if (is.na(n <- pmatch(model[[i]][[1]], model.names) - 1)) {
+        RF <- c(RF, list(model[[i]]))
+      } else {
+        np <- integer(1)
+        .C("GetNrMPPParameters", as.integer(n), as.integer(1), np,
+           PACKAGE="MarkedPointProcess", DUP=FALSE)
+        if (length(model[[i]]$p)!=np){
+#          Print(model[[i]], model.names, n, length(model[[i]]$p),i,np)
+          stop("Number of parameters incorrect")
+        }
+         mpp <-
+           c(mpp, list(list(model=model[[i]][[1]], param=model[[i]]$p, mnr=n)))
+      }
+    }
+    if (length(RF) == 1) RF <- RF[[1]] else RF <- c(list("+"), RF)
+    mean <- NULL
+  } else {
+    op.list <- c("+", "*")
+    if (!is.null(trend) && (!is.null(model$trend) || !is.null(model$mean)))
+      stop("trend is given twice")
+    trend <- model$trend
+    mean <- model$mean
+    model$trend <- model$mean <- NULL
+    if (any(is.na(sapply(model, function(x) {
+      ifelse(is.list(x),
+             pmatch(x$m, all.names),
+             pmatch(x, op.list)
+             ) }))))
+      ## prevents that names are not given uniquely; e.g. model="n"
+      ## could mean "nearest neighbour" or "nugget"
+      stop("operators not correct, or model names not unique within {",
+           paste(all.names,collapse=", "),"}")
+    n <- sapply(model, function(x) ifelse(is.list(x), pmatch(x$m, model.names), NA))
+    index <- !is.na(n)
+    index.op <- c(index[-1],FALSE) | c(FALSE,index[-length(index)])
+    ## immer noch nicht 100% geprueft:
+    RF <- model[!index.op]
+    RF[index[!index.op]] <- "+"
+    if ((length(RF)>0) && (RF[[1]]=="+"))  RF <- RF[-1]
+    if ((length(RF)>0) && (RF[[length(RF)]]=="+")) RF <- RF[-length(RF)]
+    if ((length(model)>1) &&
+        any(unlist(model[index.op | c(FALSE,index[-length(index)])])!="+"))
+      stop("marked point process models can be combined only additively") 
+    mpp <- list()
+    if (!(all(is.na(n)))) {
+      n <- n[!is.na(n)] - 1
+      np <-  integer(length(n))
+      .C("GetNrMPPParameters", as.integer(n), as.integer(length(n)), np,
+         PACKAGE="MarkedPointProcess", DUP=FALSE)
+      model <- model[index]
+      for (i in 1:length(model)) {
+        if (length(model[[i]]$p)!=np[i]){
+          print(c(length(model[[i]]$p),i,np[i]))
+          stop("number of parameters incorrect")
+        }
+        mpp[[i]] <- list(model=model[[i]]$m, param=model[[i]]$p, mnr=n[i])
+      }
     }
   }
-  if (!is.null(mean)) RF$mean <- mean
-  if (!is.null(trend)) RF$trend <- trend  
-  return(list(RF=RF,mpp=mpp))
+  return(list(RF=RF,mpp=mpp, mean=mean, trend=trend))
 }
 
 simulateMPP <- function(coordmodel=c("given", "uniform", "Poisson"),
                          coord=NULL, npoints=NULL, lambda=NULL,
                          window=NULL, edgecorrection=0,
                          repetitions=1, coordrepet=1, model=NULL,
-                         register=0, method=NULL)
+                         register=0, method=NULL, trend=NULL)
 {
   ## coord : created by coordmodel, if coordmodel>0 else coord must be given
   ##         n x 2 matrix
@@ -222,6 +239,9 @@ simulateMPP <- function(coordmodel=c("given", "uniform", "Poisson"),
                     n=repetitions,
                     method=method)
       if (is.null(rf)) stop("Error in random field simulation")
+
+#      Print(result[[r]], r, result, result[[r]]$data, rf)
+      
       result[[r]]$data <- result[[r]]$data + rf
     }
   }
@@ -232,8 +252,7 @@ simulateMPP <- function(coordmodel=c("given", "uniform", "Poisson"),
 
 rfm.test <- function(coord=NULL, data, normalize=TRUE,
                      MCrepetitions=99,  
-                     MCmodel=list(model="exponential",
-                       param=c(mean=0,variance=NA,nugget=0,scale=NA)),
+                     MCmodel=list("$", var=NA, scale=NA, list("exponential")),
                      method=NULL,
                      bin=c(-1,seq(0,1.2,l=15)),
                      MCregister=1,
@@ -256,8 +275,6 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
   RFparameters(Storing=TRUE, PrintLevel=PrintLevel)
   
   stopifnot(n.hypo>1)
-  if(is.null(MCmodel$param))
-    stop("complex models, in particular anisotropic models, are not allowed (yet)")
    
   
   ## coord : coordinates
@@ -284,40 +301,43 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
 
   ## fitvario takes most of the time!
 
+  .mpp.maxtests <- .mpp.nr.maxtests <- .mpp.digits <- .mpp.lpnames <-
+    .mpp.weightnames <- .mpp.extranames <- NULL
+  .basisMPP(environment(NULL))
   distrNr <- as.integer(pmatch("Gauss", GetDistributionNames()) - 1) 
   ## maybe others will be allowed in future
   dummy <- .C("GetmppParameters", lnorms=integer(1), weights=integer(1),
                      tests=integer(1), mppmaxchar=integer(1), modelnr=integer(1),
                      PACKAGE="MarkedPointProcess", DUP=FALSE)
-  .mpp.tests <- dummy$tests
-  .mpp.l.norms <- dummy$lnorms
-  .mpp.weights <- dummy$weights
-  .mpp.weightnames2 <- paste("w", 1:.mpp.weights, sep="")
+  mpp.tests <- dummy$tests
+  mpp.l.norms <- dummy$lnorms
+  mpp.weights <- dummy$weights
+  mpp.weightnames2 <- paste("w", 1:mpp.weights, sep="")
   dummy <- as.matrix(expand.grid(.mpp.lpnames, .mpp.weightnames))
-  .mpp.testnames <- c(paste(dummy[,1], " & ", dummy[,2], sep=""),
+  mpp.testnames <- c(paste(dummy[,1], " & ", dummy[,2], sep=""),
                       .mpp.extranames)
-  dummy <- as.matrix(expand.grid(.mpp.lpnames, .mpp.weightnames2))
-  .mpp.testnames2 <- c(paste(dummy[,1], " & ", dummy[,2], sep=""))
+  dummy <- as.matrix(expand.grid(.mpp.lpnames, mpp.weightnames2))
+  mpp.testnames2 <- c(paste(dummy[,1], " & ", dummy[,2], sep=""))
   
-  if (tests=="all") users.tests <- rep(TRUE, .mpp.tests)
+  if (tests=="all") users.tests <- rep(TRUE, mpp.tests)
   else {
-    users.tests <- rep(FALSE, .mpp.tests)
+    users.tests <- rep(FALSE, mpp.tests)
     if (!is.null(tests.lp) && !is.null(tests.weight)) {
       tw <- pmatch(tests.weight, .mpp.weightnames)
-      tw[is.na(tw)] <- pmatch(tests.weight[is.na(tw)], .mpp.weightnames2)
+      tw[is.na(tw)] <- pmatch(tests.weight[is.na(tw)], mpp.weightnames2)
       tests <- c(tests, pmatch(outer(pmatch(tests.lp, .mpp.lpnames),
-                                     .mpp.l.norms * (tw -1), "+")))
+                                     mpp.l.norms * (tw -1), "+")))
     }
     if (!is.null(tests)) {
-      users.tests[pmatch(tests, .mpp.testnames)] <- TRUE
-      users.tests[pmatch(tests, .mpp.testnames2)] <- TRUE
+      users.tests[pmatch(tests, mpp.testnames)] <- TRUE
+      users.tests[pmatch(tests, mpp.testnames2)] <- TRUE
     }
     if (length(tests) > sum(users.tests)) {
       if (PrintLevel>0) {
         cat("Choose within:\n")
-        cat(paste("'",.mpp.testnames,"'", sep=""), sep=", ")
+        cat(paste("'",mpp.testnames,"'", sep=""), sep=", ")
         cat("\nor choose within:\n")
-        cat(paste("'", c(.mpp.testnames, .mpp.extranames), "'",
+        cat(paste("'", c(mpp.testnames, .mpp.extranames), "'",
                                  sep=""), sep=", ")
         cat("\n")
       }
@@ -335,9 +355,9 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
   additive <- length(data)>1 || ncol(data[[1]]$data) > 1  
   lEbinM1 <-  as.integer(if (additive) MCrepetitions + 1 else 1)
   
-  Etest <- integer(lEbinM1 * .mpp.tests)
-  VARtest <- integer(lEbinM1 * .mpp.tests)
-  SQtest <- integer(lEbinM1 * .mpp.tests) ###
+  Etest <- integer(lEbinM1 * mpp.tests)
+  VARtest <- integer(lEbinM1 * mpp.tests)
+  SQtest <- integer(lEbinM1 * mpp.tests) ###
   MAXtest <- integer(lEbinM1 * .mpp.nr.maxtests) ###
   error <- integer(1)
 
@@ -356,13 +376,20 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
     
     for (i in 1:ncol(Data)) {
       idx <- !is.na(Data[, i])
-      x <- data[[r]]$coord[idx, , drop=FALSE]
+      x <- data[[r]]$coord[idx]
+      dim(x) <-
+        c(sum(idx), if (is.array(data[[r]]$coord)) dim(data[[r]]$coord)[-1])
+      Dist <- as.vector(dist(x))
+      ##      this currently ensure that only stationary and isotropic
+      ##      models will be allowed in fitvarip
       d <- Data[idx, i]
       ld <- length(d)
 
-      est[[i]] <- fitvario(x=x, y=NULL, z=NULL, T=NULL,
+      est[[i]] <- fitvario(Dist = Dist,
+                           truedim = if (is.matrix(coord)) ncol(coord) else 1,
+                           ##x=x, y=NULL, z=NULL, T=NULL,
                            data=d, mle.methods="ml",
-                           model=MCmodel, cross.methods=NULL, ...)$variogram$ml
+                           model=MCmodel, cross.methods=NULL, ...)$ml$model
       
       if (MCrepetitions>0) {     
         simu <- if (Barnard) {
@@ -440,7 +467,7 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
         ## n, n=1,...,100 (if 100 MC test simulations have been performed)
         ## and the the matrix null.hypo[[i]] has 100 rows
         
-        null.sl[[i]] <- matrix(nrow=length(pvalue), ncol=.mpp.tests)
+        null.sl[[i]] <- matrix(nrow=length(pvalue), ncol=mpp.tests)
         for (p in 1:length(pvalue)) {
           abspvalue <- (1 - pvalue[p] / 100) * n.hypo
           null.sl[[i]][p,] <- colSums(rate <= abspvalue) + 1 #
@@ -450,17 +477,17 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
         reject.null[[i]] <- null.sl[[i]] <= rep(data.sl[[i]], eac=length(pvalue))
         
         dimnames(null.sl[[i]]) <- dimnames(reject.null[[i]]) <-
-          list(pvalue, .mpp.testnames)
+          list(pvalue, mpp.testnames)
         reject.null[[i]] <- reject.null[[i]][, users.tests, drop=FALSE]
         null.sl[[i]] <- null.sl[[i]][, users.tests, drop=FALSE]
 
         if (any(null.sl[[i]] == 1))
           warning("strange result: null.sl equals 1 somewhere")
         if (any(null.sl[[i]] > n.hypo) && PrintLevel > 1)
-          print("estimated position for p-value in null hypothesis exceeds",
-                "position given by 'pvalue' by leading to imprecise results (",
+          print(paste("estimated position for p-value in null hypothesis exceeds",
+                "position given by 'pvalue', leading to imprecise results (",
                 i, ",", p, ",", null.sl[[i]], ",", n.hypo,
-                ") -- increase MCrepetitions!\n")
+                ") -- increase MCrepetitions!\n"))
       }
       names(reject.null) <- names(null.sl) <- c("E", "VAR", "SQ")
     }
@@ -472,7 +499,7 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
   VARtest <- matrix(VARtest, nrow=lEbinM1)
   SQtest <- matrix(SQtest, nrow=lEbinM1)
   dimnames(Etest) <- dimnames(VARtest) <- dimnames(SQtest) <-
-    list(NULL, .mpp.testnames)
+    list(NULL, mpp.testnames)
   
   return(list(E=Etest[, users.tests, drop=FALSE],     ## must be first 
               VAR=VARtest[, users.tests, drop=FALSE], ## must be second
@@ -542,7 +569,7 @@ mpp.characteristics <- function(...,
   dummy <- .C("GetmppParameters", lnorms=integer(1), weights=integer(1),
                      tests=integer(1), mppmaxchar=integer(1), modelnr=integer(1),
                      PACKAGE="MarkedPointProcess", DUP=FALSE)
-  .mpp.tests <- dummy$tests
+  mpp.tests <- dummy$tests
 
   args <- list(...)
   if (length(args)==1) {
@@ -601,13 +628,13 @@ mpp.characteristics <- function(...,
 #  print(list(rep , n^2, col ,nbins))
   
   E <- double(rep * n^2 * col * nbins)
-  ETest <- double(rep * n^2 * col * .mpp.tests)
+  ETest <- double(rep * n^2 * col * mpp.tests)
   Ebin <- integer(n^2 * col * nbins)
   VAR <- double(rep * n^2 * col2 * nbins)
-  VARTest <- double(rep * n^2 * col2 * .mpp.tests)
+  VARTest <- double(rep * n^2 * col2 * mpp.tests)
   ##  MAXTest <- double(rep * n^2 * col2 * .mpp.nr.maxtests)
   SQ  <- double(rep * n^2 * col2 * nbins)
-  SQTest <- double(rep * n^2 * col2 * .mpp.tests)
+  SQTest <- double(rep * n^2 * col2 * mpp.tests)
   VARbin <- integer(n^2 * col2 * nbins)
   KMM <- double( rep * colsum2 *  nbins)
   KMMbin <- integer(colsum2 * nbins)
@@ -646,15 +673,15 @@ mpp.characteristics <- function(...,
   }
 
   E <- matrix(E, nrow=nbins)
-  ETest <- matrix(ETest, nrow=.mpp.tests)
+  ETest <- matrix(ETest, nrow=mpp.tests)
   Ebin <- matrix(Ebin, nrow=nbins)
   VARbin <- matrix(VARbin, nrow=nbins)
   KMMbin <- matrix(KMMbin, nrow=nbins)
   GAMbin <- matrix(GAMbin, nrow=nbins)
   VAR <- matrix(VAR, nrow=nbins)
-  VARTest <- matrix(VARTest, nrow=.mpp.tests)
+  VARTest <- matrix(VARTest, nrow=mpp.tests)
   SQ <- matrix(SQ, nrow=nbins)
-  SQTest <- matrix(SQTest, nrow=.mpp.tests)
+  SQTest <- matrix(SQTest, nrow=mpp.tests)
   KMM <- matrix(KMM, nrow=nbins)
   GAM <- matrix(GAM, nrow=nbins)
   ## MAXTest <-
@@ -666,12 +693,12 @@ mpp.characteristics <- function(...,
     ps <- paste(name, "Ebin", sep="_")
     Dev(TRUE, dev, ps=ps)
     plot(midbin, Ebin[, 1], xlab="distance r", ylab="n", pch=pch)
-    Dev(FALSE, dev)
+    Dev(FALSE)
     if (!is.null(rdline)) rdline(ps)
     ps <- paste(name, "VARbin", sep="_")
     Dev(TRUE, dev, ps=ps)
     plot(midbin, VARbin[, 1], xlab="distance r", ylab="n", pch=pch)
-    Dev(FALSE, dev)    
+    Dev(FALSE)    
     for (i in 1:n) { #species i
       segmentE <- (i - 1) * (col * n + 1) 
       segmentV <- (i - 1) * (col2 * n + 1)
@@ -693,8 +720,8 @@ mpp.characteristics <- function(...,
              
             plot(midbin, E[, k + r],
     #             xlab="distance r", ylab=ylab
-                 xlab=paste("Distanz h [", xunit, "]", sep=""),
-                 ylab=paste("E(h) [", yunit, "]", sep=""),
+                 xlab=paste("distance r [", xunit, "]", sep=""),
+                 ylab=paste("E(r) [", yunit, "]", sep=""),
                  col="red", cex=1.5, ####
                  pch=pch)
 
@@ -703,7 +730,7 @@ mpp.characteristics <- function(...,
                               E[1, r + segmentE + cc]), lty=3
                   , col="green" ####
                   )
-            Dev(FALSE, dev)
+            Dev(FALSE)
           }
           k <- k+1;          
         }
@@ -725,7 +752,7 @@ mpp.characteristics <- function(...,
               plot(midbin,VAR[, l+r],xlab="distance r",ylab=ylab, pch=pch)
               lines(rangebin,c(VAR[1, r+segmentV + l - ll + 1],
                                VAR[1, r+segmentV + l - ll + 1]), lty=3)
-              Dev(FALSE, dev)
+              Dev(FALSE)
             }
             l <- l + 1;
           }
@@ -747,7 +774,7 @@ mpp.characteristics <- function(...,
               lines(rangebin,c(SQ[1, r + segmentV + l - ll + 1],
                                SQ[1, r + segmentV + l - ll + 1]),
                     lty=3)
-              Dev(FALSE, dev)
+              Dev(FALSE)
             }
             l <- l + 1;
           }
@@ -759,7 +786,7 @@ mpp.characteristics <- function(...,
     ps <- paste(name, "KMMbin", sep="_")
     Dev(TRUE, dev, ps=ps)
     plot(midbin, KMMbin[, 1], xlab="distance r", ylab="n", pch=pch)
-    Dev(FALSE, dev)    
+    Dev(FALSE)    
     k <- 1;
     for (i in 0:(n*col-1)) {
       ## (cross) k_mm and (cross) mark variogram
@@ -781,7 +808,7 @@ mpp.characteristics <- function(...,
          Dev(TRUE, dev, ps=ps)
           plot(midbin,KMM[,k+r],xlab="distance r",ylab=paste("KMM",ylab,sep=""),
                pch=pch)
-          Dev(FALSE, dev)
+          Dev(FALSE)
         }        
         for (r in ((0:(rep-1))*colsum2)){
           if (!is.null(rdline)) rdline(ps)
@@ -800,7 +827,7 @@ mpp.characteristics <- function(...,
             xx <- seq(max(midbin)/100000,max(midbin),l=length(midbin)*4);
             lines(xx, Variogram(x=xx, model=model, param=param))
            }
-        Dev(FALSE, dev)
+        Dev(FALSE)
         }        
         for (r in ((0:(rep-1))*colsum2)){
           if (!is.null(rdline)) rdline(ps)
@@ -808,7 +835,7 @@ mpp.characteristics <- function(...,
           Dev(TRUE, dev, ps=ps)
           plot(KMM[,k+r],GAM[,k+r],xlab=paste("KMM",ylab,sep=""),
               ylab=paste("gamma",ylab,sep=""), pch=pch)
-          Dev(FALSE, dev)
+          Dev(FALSE)
          }        
         k <- k+1
       }

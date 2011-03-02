@@ -33,12 +33,13 @@ simu <- function(repet, MCrep) {
   if (repet==1) stop(" at least 2")
   x <- simulateMPP(npoints=individ ,coordmodel="unif", window=c(xlim,ylim),
                     edgecorrection = radius, repetitions=1, coordrepet=repet,
-                    model=list(list(model="spherical", var=sill, scale=0.1),
-                      "+",
-                      list(model="random coin",
+                    model=
+                   list("+",
+                      list("$", var=sill, scale=0.1, list("spherical")),
+                      list("random coin",
                            p=c(1, radius, -sqrt((1-sill) *
                              diff(xlim)*diff(ylim)/(individ*pi*radius^2))) ))
-                    )
+                   )
   res <- list();
   r <- matrix(nrow=length(MCrep),ncol=5)
   RFparameters(Print=1)

@@ -8,6 +8,9 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                       tex.path="tex", biondi.etal=NULL,
                       final=TRUE
                       ) {
+  .mpp.maxtests <- .mpp.nr.maxtests <- .mpp.digits <- .mpp.lpnames <-
+    .mpp.weightnames <- .mpp.extranames <- NULL
+  .basisMPP(environment(NULL))
   on.exit(traceback())
   debug <- FALSE
   texfilename <- "srd.jrssb.04"
@@ -160,24 +163,25 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
          else readline(paste(x, ": press return"))
          else function(x) { cat(x); sleep.milli(1000); cat("\n")})
         
-  .dummy <- .C("GetmppParameters", lnorms=integer(1), weights=integer(1),
+  dummy <- .C("GetmppParameters", lnorms=integer(1), weights=integer(1),
                tests=integer(1), mppmaxchar=integer(1), modelnr=integer(1),
                debug=integer(1),
                PACKAGE="MarkedPointProcess", DUP=FALSE)
-  .mpp.tests <- .dummy$tests
-  .mpp.weights <- .dummy$weights
-  .mpp.weightnames2 <- paste("w", 1:.mpp.weights, sep="")
+  mpp.tests <- dummy$tests
+  mpp.weights <- dummy$weights
+  mpp.weightnames2 <- paste("w", 1:mpp.weights, sep="")
 
-  .dummy <- as.matrix(expand.grid(.mpp.lpnames, .mpp.weightnames))
-  .mpp.testnames <- c(paste(.dummy[,1], " & ", .dummy[,2], sep=""),
+  dummy <- as.matrix(expand.grid(.mpp.lpnames, .mpp.weightnames))
+  mpp.testnames <- c(paste(dummy[,1], " & ", dummy[,2], sep=""),
                       .mpp.extranames)
-  .dummy <- as.matrix(expand.grid(.mpp.lpnames, .mpp.weightnames2))
-  .mpp.testnames2 <- c(paste(.dummy[,1], " & ", .dummy[,2], sep=""))
-  .mpp.l.norms <- length(.mpp.lpnames)
+  dummy <- as.matrix(expand.grid(.mpp.lpnames, mpp.weightnames2))
+  mpp.testnames2 <- c(paste(dummy[,1], " & ", dummy[,2], sep=""))
+  mpp.l.norms <- length(.mpp.lpnames)
   stopifnot(100 %in% simu.individ.list)
 
 ######################################################################
 ######################################################################
+
 
   
   simulate.rfmtest <- function(coord=NULL, 
@@ -308,8 +312,8 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                         print.legend = TRUE, 
                         type="l", cex=1, 
                         y.pos.leg = 0.65,
-                        pch.basic=1:.mpp.l.norms,
-                        lty.basic=1:.mpp.weights,
+                        pch.basic=1:mpp.l.norms,
+                        lty.basic=1:mpp.weights,
                         lty.abline=4, col.abline=1, 
                         ...) {
 
@@ -359,55 +363,55 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     ## lty.basic : line type for the graphs 
     ## lty.abline, col.abline : line type and colour for the 5% level line
     simu.fig1.ps.special <- c("E", "V", "S", "M")
-    users.tests <- rep(FALSE, .mpp.tests)
+    users.tests <- rep(FALSE, mpp.tests)
     if (length(select.lp)==1 && select.lp=="all") {
-      sl <- 1:.mpp.l.norms
-      select.lp <-rep(TRUE, .mpp.l.norms)
+      sl <- 1:mpp.l.norms
+      select.lp <-rep(TRUE, mpp.l.norms)
     } else {
       sl <- pmatch(select.lp, .mpp.lpnames)
       stopifnot(all(!is.na(select.lp)))
-      select.lp <- rep(FALSE, .mpp.l.norms)
+      select.lp <- rep(FALSE, mpp.l.norms)
       select.lp[sl] <- TRUE
     }
     if (length(select.weight)==1 && select.weight=="all") {
-      sw <- 1:.mpp.weights
+      sw <- 1:mpp.weights
       select.weight <- rep(TRUE, length(.mpp.weightnames))
     } else {
       sw <- pmatch(select.weight, .mpp.weightnames)
-      sw[is.na(sw)] <- pmatch(select.weight[is.na(sw)], .mpp.weightnames2)
+      sw[is.na(sw)] <- pmatch(select.weight[is.na(sw)], mpp.weightnames2)
       stopifnot(all(!is.na(select.weight)))
       select.weight <- rep(FALSE, length(.mpp.weightnames))
       select.weight[sw] <- TRUE
     }
     
-    select <- rep(FALSE, .mpp.tests)
-    select[outer(sl, (sw - 1) * .mpp.l.norms, "+")] <- TRUE
+    select <- rep(FALSE, mpp.tests)
+    select[outer(sl, (sw - 1) * mpp.l.norms, "+")] <- TRUE
     if (select.extra)
-      select[.mpp.tests :(.mpp.tests-length(.mpp.extranames)+1)] <- TRUE
+      select[mpp.tests :(mpp.tests-length(.mpp.extranames)+1)] <- TRUE
     select.extra <- rep(select.extra, length(.mpp.extranames))
     select.weight <- c(select.weight, select.extra)
     select.lp <- c(select.lp, select.extra)
     
     if (coloured)
-      col.leg <- c(rainbow(.mpp.l.norms), rep("black", length(.mpp.extranames)))
+      col.leg <- c(rainbow(mpp.l.norms), rep("black", length(.mpp.extranames)))
     else {
-      col.leg <- rep(NA, .mpp.l.norms + length(.mpp.extranames))
+      col.leg <- rep(NA, mpp.l.norms + length(.mpp.extranames))
       col.leg[select.lp] <- grey(seq(0, 0.8, length=sum(select.lp)))
     }
-    col <- c(rep(col.leg[1:.mpp.l.norms], .mpp.weights), 
-             col.leg[-1:-.mpp.l.norms])[select]
+    col <- c(rep(col.leg[1:mpp.l.norms], mpp.weights), 
+             col.leg[-1:-mpp.l.norms])[select]
     col.leg <- col.leg[select.lp]
 
-    pch.leg <- c(pch.basic, .mpp.l.norms + 1:length(.mpp.extranames))
-    pch <- c(rep(pch.leg[1:.mpp.l.norms], times=.mpp.weights), 
-             pch.leg[-1:-.mpp.l.norms])[select]
+    pch.leg <- c(pch.basic, mpp.l.norms + 1:length(.mpp.extranames))
+    pch <- c(rep(pch.leg[1:mpp.l.norms], times=mpp.weights), 
+             pch.leg[-1:-mpp.l.norms])[select]
    
     lty.leg <- c(lty.basic, rep(9, length(.mpp.extranames)))
-    lty <- c(rep(lty.leg[1:.mpp.weights], each=.mpp.l.norms), 
-             lty.leg[-1:-.mpp.weights])[select]
+    lty <- c(rep(lty.leg[1:mpp.weights], each=mpp.l.norms), 
+             lty.leg[-1:-mpp.weights])[select]
     
-    Numbers <- c(rep(.mpp.tests, 3), .mpp.nr.maxtests) ## E1, V2, S3, MAX4
-    Numbers <- rep(.mpp.tests, 3) ## E1, V2, S3 -- ONLY!
+    Numbers <- c(rep(mpp.tests, 3), .mpp.nr.maxtests) ## E1, V2, S3, MAX4
+    Numbers <- rep(mpp.tests, 3) ## E1, V2, S3 -- ONLY!
     
     args <- list(...);
     args <- args[sapply(args, function(y) !is.null(y))] ## remove NULLs
@@ -569,17 +573,17 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
           if (PrintLevel>6) {
             if (i<=3) {## i.e., E1, V2, S3
               print(format(c(i, pvalue[p], 
-                             s[c(1, .mpp.tests-1, .mpp.tests)], 
-                             r[c(1, .mpp.tests-1, .mpp.tests)], Inf, 
-                             mean(matrix(s[2:(.mpp.tests-2)], 
-                                         nrow=.mpp.l.norms)) / number.files), 
+                             s[c(1, mpp.tests-1, mpp.tests)], 
+                             r[c(1, mpp.tests-1, mpp.tests)], Inf, 
+                             mean(matrix(s[2:(mpp.tests-2)], 
+                                         nrow=mpp.l.norms)) / number.files), 
                            dig=.mpp.digits), 
                     quote=FALSE)
-              print(format(cbind(matrix(s[2:(.mpp.tests-2)], 
-                                        nrow=.mpp.l.norms), 
-                                 seq(Inf, Inf, l=.mpp.l.norms), 
-                                 matrix(r[2:(.mpp.tests-2)], 
-                                        nrow=.mpp.l.norms)), dig=.mpp.digits), 
+              print(format(cbind(matrix(s[2:(mpp.tests-2)], 
+                                        nrow=mpp.l.norms), 
+                                 seq(Inf, Inf, l=mpp.l.norms), 
+                                 matrix(r[2:(mpp.tests-2)], 
+                                        nrow=mpp.l.norms)), dig=.mpp.digits), 
                     quote=FALSE)
             } else { ##  MAX4
               print (cbind(.mpp.maxtests, s, r))
@@ -624,7 +628,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     for (i in 1:length(args)) ntot <- ntot * length(args[[i]])
     
     if (PrintLevel>7) print("TOTAL")
-    ret <- array(dim=c(length(Numbers), length(pvalue), .mpp.tests))
+    ret <- array(dim=c(length(Numbers), length(pvalue), mpp.tests))
     for (i in 1:length(Numbers)) {
       for (p in 1:length(pvalue)) {
         if (PrintLevel>7) print(paste(simu.fig1.ps.special[i], pvalue[p]))
@@ -634,17 +638,17 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
         r <- rank(s)
         if (PrintLevel>7) {
           if (i<=3) {
-            print(format(c(i, round(s[c(1, .mpp.tests - 1, .mpp.tests)]), 
-                           r[c(1, .mpp.tests - 1, .mpp.tests)], Inf, 
-                           sum(matrix(s[2:(.mpp.tests - 2)], 
-                                      nrow=.mpp.l.norms)) ), 
+            print(format(c(i, round(s[c(1, mpp.tests - 1, mpp.tests)]), 
+                           r[c(1, mpp.tests - 1, mpp.tests)], Inf, 
+                           sum(matrix(s[2:(mpp.tests - 2)], 
+                                      nrow=mpp.l.norms)) ), 
                          dig=.mpp.digits), 
                   quote=FALSE)
-            print(format(cbind(round(matrix(s[2:(.mpp.tests - 2)], 
-                                            nrow=.mpp.l.norms)), 
-                               seq(Inf, Inf, l=.mpp.l.norms), 
-                               matrix(r[2:(.mpp.tests - 2)], 
-                                      nrow=.mpp.l.norms)), 
+            print(format(cbind(round(matrix(s[2:(mpp.tests - 2)], 
+                                            nrow=mpp.l.norms)), 
+                               seq(Inf, Inf, l=mpp.l.norms), 
+                               matrix(r[2:(mpp.tests - 2)], 
+                                      nrow=mpp.l.norms)), 
                          dig=.mpp.digits), 
                   quote=FALSE)
           } else {
@@ -660,7 +664,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
   
 #### latex-table, e.g. table 1 in SRD (2004)
   x.table <- function(s, label, caption, reverse.ordering=FALSE, file, 
-                      norm.select=c(1:5, 9), weight.select=1:.mpp.weights, 
+                      norm.select=c(1:5, 9), weight.select=1:mpp.weights, 
                       parenthesis.space="4.12ex", 
                       add.col=NULL, start=TRUE, end=TRUE)
     {
@@ -709,7 +713,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                     "}"))
       s <- s[norm.select, weight.select]
       r <- round(matrix(rank( (-1 + 2 * reverse.ordering) * s),
-                        ncol=.mpp.weights))
+                        ncol=mpp.weights))
       s <- round(s)
       if (start) {
         write(file=file, append=TRUE, 
@@ -763,7 +767,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     xlim <- c(0, x)
     ylim <- c(0, y)
     if (estimate) {
-      MCm <- list(model=simu.standard.estim, param=c(0, NA, 0, NA))
+      MCm <- list("$", var=NA, scale=NA, list(simu.standard.estim))
       sill <-  NA
     } else {
       MCm <- model
@@ -814,14 +818,14 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
       for (r in 1:length(simu.rlist)) {
         if (PrintLevel>8) cat("simulate.rfmtest", r, "\n")
         model <- function(variance) # 
-          list(list(model = mpp.model, 
+          list("+",
+               list(mpp.model, 
                     p = c(fct=1, # coin function
                       radius=simu.rlist[[r]]$radius, 
                       height=sqrt((1-variance) * x *
                         y / (individ*pi*simu.rlist[[r]]$radius^2)))), 
-                      "+", 
-               list(model=simu.standard.cov, var=variance,
-                    scale=simu.rlist[[r]]$scale)
+               list("$", var=variance, scale=simu.rlist[[r]]$scale,
+                    list(simu.standard.cov))
                )
         simu[[r]] <-
           simulate.rfmtest(coord=NULL,  npoints=individ, 
@@ -910,6 +914,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     ## rfm.test
     if (!file.exists(filename)) {
       if (PrintLevel>6) cat("rfm.test")
+
       y <- rfm.test(# coord
                     data=x, normalize=normalize, MCrepetition=MCrep, 
                     MCmodel=MCmodel,
@@ -919,7 +924,8 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                     n.hypo=data.n.hypo,
                     # pvalue, tests, tests.lp, tests.weight, Barnard, Print
                     optim.control = optim.control,
-                    lower=lower.kappa, upper=upper.kappa
+                    lower=c(rep(NA, 3), lower.kappa),
+                    upper=c(rep(NA, 3), upper.kappa)
                     )
       if (!debug) y$null.hypo <- NULL
       save(file=filename, x, y)
@@ -1148,11 +1154,19 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
       gam <- (1 - exp(-lambda * pi * x^2) ) / (lambda * pi)
       
       for (i in 1:length(x)) {
-        a <- if (FALSE)
-          adapt(2, lower=c(0, 0), upper=c(x[i], x[i]), min=100, max=1000, 
-                fun=function(st) exp(-lambda * U(x[i], st[1], st[2])), 
-                eps=0.01)  else NA
-        if (PrintLevel > 0) cat("R package adapt is not available anymore;\n so nn.G cannot be calculated anymore\n")
+        
+        if (x[i] <= 0) next
+ #       Print(x[i])
+#        options(warn=2)
+        
+        a <- 
+          cuhre(ndim=2, ncomp=1,
+                integrand=function(st) exp(-lambda * U(x[i], st[1], st[2])), 
+                lower=c(0, 0), upper=c(x[i], x[i]),
+                rel.tol=0.01,
+                min.eval=100, max.eval=1000,
+                flags=list(verbose=PrintLevel>1)
+                )
         gam[i] <- gam[i] - a$value
       }
       return(gam)
@@ -1218,25 +1232,28 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
         lbRd <- individ * pi * radius^2 / (diff(xlim) * diff(ylim))
         intrinsic.var <- model$intrinsic.var(lbRd)
         model <- function(variance)
-          list(list(model=mpp.model, 
+          list("+",
+               list(mpp.model, 
                     p=c(fct=1, # coin function
                       radius=radius, 
                       height=sqrt((1-variance)  / intrinsic.var))), 
-               "+", list(model=gauss.model, var=variance, scale=scale))
+               list("$", var=variance, scale=scale, list(gauss.model)))
       } else {
         ## the local variables of scale and radius are used here!
         model <- function(variance)
-          list(list(model="circ", var=1.0-variance, scale=2 * radius), 
-               "+", list(model=gauss.model, var=variance, scale=scale))
+          list("+",
+               list("$", var=1.0-variance, scale=2 * radius, list("circ")), 
+               list("$", var=variance, scale=scale, list(gauss.model))
+               )
       }
       
       if (estimate) {
-        MCm <- list(model=MCmodel, param=c(0, NA, 0, NA))
+        MCm <- list("$", var=NA, scale=NA, list(MCmodel))
         sill <-  NA
       } else {
         ## scale is really the local scale here !
         MCm <- function(variance)
-          list(model=gauss.model, param=c(0, variance, 0, scale))
+          list("$", var=variance, scale=scale, list(gauss.model))
         sill <- NA
       }
 
@@ -1319,18 +1336,18 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
       name <- simu.nnname(scale, x, y, individ)
       
       model <- function(variance)
-        list(list(model=gauss.model, var=variance, scale=scale), 
-             "+", 
-             list(model="nearest neighbour", 
-              p=c(factor=sqrt((1 - variance) *
-                    individ / (diff(xlim) * diff(ylim)) / (1/pi - 0.25))))
+        list("+",
+             list("$", var=variance, scale=scale, list(gauss.model)), 
+             list("nearest neighbour", 
+                  p=c(factor=sqrt((1 - variance) *
+                        individ / (diff(xlim) * diff(ylim)) / (1/pi - 0.25))))
              )
       simulate.rfmtest(npoints=individ, window=c(xlim, ylim), 
                        edgecorrection=radius, coordrep=rep, 
                        model = model,
                        normalize=TRUE, 
                        MCrepetition=MCrep, 
-                       MCmodel = list(model=MCmodel, param=c(0,NA,0,NA)), 
+                       MCmodel = list("$", var=NA, scale=NA, list(MCmodel)), 
                        sill= NA,
                        saving=name, path = simu.path,
                        Barnard = Barnard
@@ -1347,7 +1364,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
 
   latex.tab.123 <- function(force=FALSE,  # dev,
                             norm.select=1:3, #norm.select <- c(1:5, 9)
-                            weight.select=1:.mpp.weights,
+                            weight.select=1:mpp.weights,
                             EVS = c(1, 2) #1:E, 2:V, 3:S
                             ) {
     lname <-  c("1", "2", "3", "4", "5", "6", "10", "11")
@@ -1670,7 +1687,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                     "$ should be small. ")
           } else  null.hypo.text <- " "
 
-          x.table(matrix(m[[v]][Y$EVS, p, 2:(.mpp.tests - 2)],ncol=.mpp.weights),
+          x.table(matrix(m[[v]][Y$EVS, p, 2:(mpp.tests - 2)],ncol=mpp.weights),
                   label=paste(Y$tex.label, Y$label, sep="."), 
                   caption=paste(Y$Title, 
                     if (is.null(Y$no.further.text) || !Y$no.further.text)
@@ -1722,7 +1739,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     if (is.null(biondi.etal)) f[7] <- ""
     if (f[8]!="") stop("damaged tex file")
     if (file.exists(texfile))
-      warning(paste("LaTeX file '", texfile, "' has be overwritten", sep=""))
+      warning(paste("LaTeX file '", texfile, "' has been overwritten", sep=""))
     write(file=texfile, f)
     file.remove(dvifile)
     system(paste("latex", texfile))
@@ -1750,35 +1767,35 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
       "create dvi (#8, #9, #12 must have been performed -- linux machines only!)"
       )
 
-  while (TRUE) {
-   if (length(input)==0) input <- menu(items)
+  while (TRUE) {   
+    if ((inputmenu <-length(input)==0)) input <- menu(items)
     if (input[1] > length(items) || input[1]==0) break
-    if (PrintLevel>1) cat(input[1], ":", items[input[1]], "\n")
+    if (PrintLevel>1 || !inputmenu) cat(input[1], ":", items[input[1]], "\n")
 
     switch(input[1], 
            {
              if (!(50 %in% simu.individ.list)) 
                cat("'", items[input[1]],
-                   "' jumped since not considered in the summaries\n")
+                   "' jumped since final=FALSE and hence not considered in the summaries\n")
              else worksheet.add(i=50, w=repet)
            }, {
              if (!(50 %in% simu.individ.list))
                cat("'", items[input[1]],
-                   "' jumped not considered in the summaries\n")
+                   "' jumped since final=FALSE and hence not considered in the summaries\n")
              else worksheet.add(i=50, model=simu.models$var, w=repet)
            }, { #3
              worksheet.add(i=100, w=repet)
            }, {
              worksheet.add(i=100, model=simu.models$var, w=repet)
            }, {
-             if (!(50 %in% simu.individ.list))
+             if (!(200 %in% simu.individ.list))
                cat("'", items[input[1]],
-                   "' jumped since not considered in the summaries\n")
+                   "' jumped since final=FALSE and hence not considered in the summaries\n")
              else worksheet.add(i=200, w=repet)
            }, { #6
-             if (!(50 %in% simu.individ.list))
+             if (!(200 %in% simu.individ.list))
                cat("'", items[input[1]],
-                   "' jumped since not considered in the summaries\n")
+                   "' jumped  since final=FALSE and hence not considered in the summaries\n")
              else worksheet.add(i=200, model=simu.models$var, w=repet)
            }, {
              worksheet.nn(w=repet)
@@ -1799,8 +1816,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                    "\ndetails.\n")
              } else plotdata(data=data[c(2,3)]) # biondi only
            }, {
-             # if (!require(adapt)) next
-             cat("R package adapt is no longer available. So this part does not work anymore\n")
+             if (!require(R2Cuba)) next
              theoretical.examples()
            }, {
              try(latex())     

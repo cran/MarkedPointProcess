@@ -9,7 +9,7 @@ simulateMPP(coordmodel=c("given", "uniform", "Poisson"),
              coord=NULL, npoints=NULL, lambda=NULL,
              window=NULL,  edgecorrection=0.0,
              repetitions=1, coordrepet=1, model=NULL,
-             register=0, method=NULL) 
+             register=0, method=NULL, trend=NULL) 
 }
 \arguments{
   \item{coordmodel}{if \code{coordmodel="given"} then \code{coord}
@@ -61,6 +61,10 @@ simulateMPP(coordmodel=c("given", "uniform", "Poisson"),
     simulated; if \code{is.null(method)} then the method is chosen
     automatically, see \command{\link[RandomFields]{GaussRF}}
   }
+
+  \item{trend}{
+    real value, giving the mean
+  }
 }
 \details{
   The definition of a model is of the form
@@ -93,20 +97,24 @@ simulateMPP(coordmodel=c("given", "uniform", "Poisson"),
 }
 %\references{}
 \author{Martin Schlather, \email{martin.schlather@math.uni-goettingen.de}
-  \url{http://www.stochastik.math.uni-goettingen.de/institute}}
+  \url{http://www.stochastik.math.uni-goettingen.de/~schlather}}
 \seealso{\command{\link{get.mpp.names}},
   \command{\link{rfm.test}}, \command{\link{simulateMPP}},
   \command{\link{splitmodel}}, \link{MarkedPointProcess}
 }
 
 \examples{
+%   library(MarkedPointProcess, lib="~/TMP"); source("/home/schlather/R/MPP/MarkedPointProcess/tests/source.R");source("/home/schlather/R/RF/RandomFields/tests/source.R")
  xlim <- c(0, if (interactive()) 200 else 20)
- mpp <- simulateMPP(coordmodel="Poisson", lambda=1,
+ mpp <- simulateMPP(coordmodel="Poisson", lambda=0.1,
               window=c(xlim=xlim, ylim=c(20, 70)),
-              repet=3, coordrepet=4,
-              model=list(list(model="exp", var=1, scale=10),
-                         "+",
-                         list(model="nearest neighbour", p=1)))
+              repet=2, coordrepet=4,
+              model=list("+",
+                         list("$", var=1, scale=10, list("exp")),
+                         list("nearest neighbour", p=1))
+              )
   str(mpp)
+  plotWithCircles(cbind(mpp[[1]]$coord, mpp[[1]]$data[,1]))
+
 }
 \keyword{spatial}

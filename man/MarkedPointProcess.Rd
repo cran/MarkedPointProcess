@@ -44,14 +44,14 @@
 }
 
 \author{Martin Schlather, \email{martin.schlather@math.uni-goettingen.de}
-  \url{http://www.stochastik.math.uni-goettingen.de/institute}}
+  \url{http://www.stochastik.math.uni-goettingen.de/~schlather}}
 
 \section{Acknowledgement}{
   The work has been financially
   supported by the German Federal Ministry of Research
   and Technology (BMFT) grant PT BEO 51-0339476C during 2000-03.
 }
-
+ 
 \keyword{spatial}
 
 

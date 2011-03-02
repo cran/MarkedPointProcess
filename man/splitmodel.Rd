@@ -9,7 +9,7 @@
   point process part
 }
 \usage{
-splitmodel(model)
+splitmodel(model, trend=NULL)
 }
 %- maybe also `usage' for other objects documented here.
 \arguments{
@@ -32,9 +32,12 @@ splitmodel(model)
     can be combined by \code{OP.i="+"} or \code{OP.i="*"}, those for the
     marked point process parts only by \code{OP.i="+"}.
   }
+  \item{trend}{
+    a trend can be given
+  }
 }
 \value{
-  \code{list(RF=RF, mpp=mpp)} where \code{RF} is a usual model
+  \code{list(RF=RF, mpp=mpp, mean, trend)} where \code{RF} is a usual model
   definition for a random field.  Further,
   \code{mpp=list(mpp.1,\ldots,mpp.n)},
   where \code{mpp.i=list(model=model,param=param,mnr=)} and \code{mnr}
@@ -42,10 +45,37 @@ splitmodel(model)
 }
 
 \author{Martin Schlather, \email{martin.schlather@math.uni-goettingen.de}
-  \url{http://www.stochastik.math.uni-goettingen.de/institute}}
+  \url{http://www.stochastik.math.uni-goettingen.de/~schlather}}
 \seealso{\command{\link{simulateMPP}} }
 
 \examples{
+##############################
+#### new model definitions ###
+##############################
+
+str(splitmodel(list("$", var=5, scale=3, list("exp"))))
+
+str(splitmodel(list("nearest neighbour", param=4)))
+
+str(splitmodel(list("+",
+                    list("$", var=5, scale=3, list("exp")),
+                    list("nearest neighbour", param=4)
+                    )))
+
+str(splitmodel(list("+",
+                    list("*",
+                         list("$", var=5, scale=3, list("exp")),
+                         list("$", var=1, scale=2, list("spherical"))
+                         ),
+                    list("nearest neighbour", param=4),
+                    list("random coin", param=c(fct=1, scale=7, height=8))
+                    )))
+
+
+##############################
+#### old model definitions ###
+##############################
+
 str(splitmodel(list(list(model="exp", var=5, scale=3))))
 
 str(splitmodel(list(list(model="nearest neighbour", param=4))))
@@ -64,6 +94,7 @@ str(splitmodel(list(list(model="exp", var=5, scale=3),
                     list(model="random coin",
                          param=c(fct=1, scale=7, height=8))
                     )))
+
 }
 \keyword{spatial}% at least one, from doc/KEYWORDS
 
