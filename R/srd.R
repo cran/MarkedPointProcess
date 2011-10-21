@@ -543,7 +543,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                  lty=lty.abline, lwd=0.3)
           if (print.legend) {
             legend(max(gauss.variance), percent, 
-                   xj=1, yj=1, ncol=2, 
+                   xjust=1, yjust=1, ncol=2, 
                    legend=c("max", expression(l[2]), 
                      expression(l[1]), expression(r[1]), expression(r[2]), 
                      expression(r[2, 2]), expression(r[2, 3]),
@@ -551,7 +551,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                    col=col.leg, pch=15, cex=cex)
             if (type=="p")
               legend(max(gauss.variance),  y.pos.leg * percent, 
-                     xj=1, yj=0.5, ncol=2, 
+                     xjust=1, yjust=0.5, ncol=2, 
                      legend=c("max-min", "L2, no bin", "L1, no bin", 
                        expression(w[1]),  expression(w[2]), 
                        expression(w[3]), expression(w[4]), 
@@ -560,7 +560,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                      pch=pch.leg[select.weight], cex=cex)
             else            
               legend(max(gauss.variance),  y.pos.leg * percent, 
-                     xj=1, yj=0.5, ncol=2, 
+                     xjust=1, yjust=0.5, ncol=2, 
                      legend=c("max-min", "L2, no bin", "L1, no bin", 
                        expression(w[1]),  expression(w[2]), 
                        expression(w[3]), expression(w[4]), 
@@ -833,7 +833,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                            repetitions=1, edgecorrection=simu.rlist[[r]]$radius,
                            coordrep=1, model = model, 
                            gauss.variance = simu.rlist[[r]]$gauss.variance,
-                           normalize=TRUE, MCrepetition=MCrep, MCmodel = MCm, 
+                           normalize=TRUE, MCrepetitions=MCrep, MCmodel = MCm, 
                            sill= sill, bin=bin, Ebin=seq(0, 1, 0.01), 
                            saving=FALSE, path=simu.path, return.data=TRUE)
       }
@@ -916,7 +916,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
       if (PrintLevel>6) cat("rfm.test")
 
       y <- rfm.test(# coord
-                    data=x, normalize=normalize, MCrepetition=MCrep, 
+                    data=x, normalize=normalize, MCrepetitions=MCrep, 
                     MCmodel=MCmodel,
                     # method,
                     bin=bin, # Ebin=seq(0, 1, 0.01),
@@ -1022,7 +1022,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
         }
       }
       if (data.fcts[f]=="GAM")
-        legend(x=max(data.xlim), y=0, xj=1, yj=0, legend=leg, 
+        legend(x=max(data.xlim), y=0, xjust=1, yjust=0, legend=leg, 
                lty=sapply(ALL, function(x) if (is.list(x)) x$lty else NULL), 
                cex=1.4)
       if (is.numeric(dev)) rl(filename)
@@ -1109,7 +1109,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
       for (i in 1:length(x)) if (x[i]!=0) {
         res[i] <-
           integrate(f=function(s) exp(-s)/sqrt(s), 
-                    low=1E-100, up=lambda * pi * x[i]^2)$value /
+                    lower=1E-100, upper=lambda * pi * x[i]^2)$value /
                       (2 * sqrt(pi * lambda))
       }
       return(res)
@@ -1262,7 +1262,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                        coordrep=rep, model = model,
                        normalize=TRUE,
                        method=method,
-                       MCrepetition=MCrep, MCmodel = MCm, sill= sill,
+                       MCrepetitions=MCrep, MCmodel = MCm, sill= sill,
                        saving=name, path = simu.path,
                        Barnard = Barnard
                        )
@@ -1346,7 +1346,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                        edgecorrection=radius, coordrep=rep, 
                        model = model,
                        normalize=TRUE, 
-                       MCrepetition=MCrep, 
+                       MCrepetitions=MCrep, 
                        MCmodel = list("$", var=NA, scale=NA, list(MCmodel)), 
                        sill= NA,
                        saving=name, path = simu.path,

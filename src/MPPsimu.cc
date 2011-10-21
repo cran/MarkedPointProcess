@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CHECK 1
 
 #include <math.h>
-#include <assert.h>
+ 
 #include "MPP.h"
 
 #define PRECISION 1E-11
@@ -110,7 +110,8 @@ void randomcoins(double *x, double *y, int *lx, double *px, double *py, int *lp,
       }
     }
     break;
-  default: assert(false);
+  default:
+    error("random coin: unknown shape function");
   }
   
   register double height;
@@ -146,7 +147,7 @@ void GenerateMPPData(double *coord,
 		     double *data,
 		     int *ncol,
 		     int *mppnr, int *nmpp, double *mppPList, int *nPList,     
-		     int *PrintLevel, int *error)
+		     int *PrintLevel, int *err)
 {
   /*    
     coord : matrix of *npoints x 2 entries (which might be empty ones)
@@ -184,13 +185,13 @@ void GenerateMPPData(double *coord,
   px = py = G = NULL;
   npointsncol = *npoints * *ncol;
 
-  if (*ncol<1) {*error=MPPERR_NODATA; goto ErrorHandling;} 
+  if (*ncol<1) {*err=MPPERR_NODATA; goto ErrorHandling;} 
   
   GetRNGstate();
 
   if (currentmppNr==-1) InitMPPModelList();
 
-  *error = 0;
+  *err = 0;
    
   px =  coord;
   py =  &coord[*npoints];
@@ -236,10 +237,11 @@ void GenerateMPPData(double *coord,
     }   
     marksinitialised = false;
     break;
-  default : assert(false);
+  default :
+    error("GenerateMPPData:  unknown model for coordinates");
   }
 
-  if (actrow<2) { *error=MPPERR_POINTS; goto ErrorHandling;} 
+  if (actrow<2) { *err=MPPERR_POINTS; goto ErrorHandling;} 
     
   if (!marksinitialised) 
     for (segment=0; segment<npointsncol; segment+=*npoints) {      
@@ -260,7 +262,7 @@ void GenerateMPPData(double *coord,
     np = (int) (INT_EPSILON + POISSON_RANDOM(*lambda * diffx * diffy));
     if ( ((px = (double*) malloc(sizeof(double) * (np + actrow)))==NULL) ||
 	 ((py = (double*) malloc(sizeof(double) * (np + actrow)))==NULL) ) {
-      *error=MPPERR_MEMALLOC; goto ErrorHandling;}
+      *err=MPPERR_MEMALLOC; goto ErrorHandling;}
     k = 0; 
     for (i=0; i<np; i++) { 
       px[k]= UNIFORM_RANDOM * diffx + minx;
@@ -281,15 +283,15 @@ void GenerateMPPData(double *coord,
   // first check if the number of passed parameters is correct
   for (curparam=i=0; i<*nmpp; i++) {
     if ((mppnr[i]<0) || (mppnr[i]>=currentmppNr)) 
-      {*error=MPPERR_MODELNR; goto ErrorHandling;}
+      {*err=MPPERR_MODELNR; goto ErrorHandling;}
     curparam += mpp_model[mppnr[i]].nparam;
   }
-  if (curparam != *nPList) { *error=MPPERR_PARAMS; goto ErrorHandling; }
+  if (curparam != *nPList) { *err=MPPERR_PARAMS; goto ErrorHandling; }
 
   // generation of the marks
   curparam = 0;
   if ((G = (double *) malloc(sizeof(double) * actrow))==NULL) {
-    *error = MPPERR_MEMALLOC; goto ErrorHandling;}
+    *err = MPPERR_MEMALLOC; goto ErrorHandling;}
   for (i=0; i<*nmpp; i++) {
     mpp_model[mppnr[i]].fct(coord,&coord[*npoints],&actrow,px,py,&np, 
 			    &(mppPList[curparam]),G);
@@ -315,6 +317,6 @@ void GenerateMPPData(double *coord,
     if (px!=NULL) free(px);
     if (py!=NULL) free(py); 
   }
-  if (MPP_PRINTLEVEL>0) MPPErrorMessage(*error);
+  if (MPP_PRINTLEVEL>0) MPPErrorMessage(*err);
 }
 

@@ -1,6 +1,6 @@
 #ifndef MPP_H
 #define MPP_H 1
-#include "GSLvsR.h"
+#include "basic.h"
 #include "MarkedPointProcess.h"
 
 #define NUMBER_L_NORMS 5 /* L_infty, L_2, L_1, L_robust L_anitrobust1 */

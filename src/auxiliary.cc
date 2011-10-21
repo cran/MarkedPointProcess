@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <math.h>
 #include <unistd.h>
-#include <assert.h>
+ 
 #include "auxiliary.h"
 
 /*
@@ -102,8 +102,11 @@ double quantile(double *X, int lb, double p)
 {
   int *pos,i,j; 
   double result,*Y;
-  assert( (pos = (int *) malloc(sizeof(int) * lb)) != NULL);
-  assert( (Y = (double *) malloc(sizeof(double) * lb)) != NULL);
+  
+  if ((pos = (int *) malloc(sizeof(int) * lb)) == NULL)
+    error("quantile: memory allocation error");
+  if ((Y = (double *) malloc(sizeof(double) * lb)) == NULL)
+    error("quantile: Memory allocation error");  
   for (j=i=0; i<lb; i++) { 
     if (!(RF_ISNA(X[i]))) {
       pos[j] = j; /* needed for orderdouble */  

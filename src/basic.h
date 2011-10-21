@@ -4,6 +4,9 @@
 #include <R.h>
 #include <Rinternals.h>
 #include <Rmath.h>
+#include <errno.h>
+#define NDEBUG 1
+#include <assert.h>
 
 #define EXTERN extern "C"
 #define PRINTF Rprintf

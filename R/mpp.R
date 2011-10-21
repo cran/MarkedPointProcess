@@ -10,14 +10,14 @@
 .basisMPP <- function(ENV) {
   assign(".mpp.maxtests",
          as.integer(t(as.matrix(expand.grid(c(12,20,14,18,23,27),
-                                            c(12,13,21,22,30,31))))), env=ENV)
+                                            c(12,13,21,22,30,31))))), envir=ENV)
   assign(".mpp.nr.maxtests",
-         as.integer(length(get(".mpp.maxtests", env=ENV)) / 2), env=ENV)
-  assign(".mpp.digits", 3, env=ENV)
-  assign(".mpp.lpnames", c("max", "l2", "l1", "robust", "anti"), env=ENV)
+         as.integer(length(get(".mpp.maxtests", env=ENV)) / 2), envir=ENV)
+  assign(".mpp.digits", 3, envir=ENV)
+  assign(".mpp.lpnames", c("max", "l2", "l1", "robust", "anti"), envir=ENV)
   assign(".mpp.weightnames", c("const", "1/sum#", "sqrt(1/sum#)", "1/sumsqrt#",
-                               "#", "sqrt#", "1/sd") , env=ENV)
-  assign(".mpp.extranames", c("range", "no.bin.sq", "no.bin.abs"), env=ENV)
+                               "#", "sqrt#", "1/sd") , envir=ENV)
+  assign(".mpp.extranames", c("range", "no.bin.sq", "no.bin.abs"), envir=ENV)
 }
 
 .onLoad <- function (lib, pkg) {

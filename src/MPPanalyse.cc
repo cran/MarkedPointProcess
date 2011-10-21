@@ -70,10 +70,12 @@ What is left to do:
 */
 
 
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <math.h>
-#include <assert.h>
+#include <R.h>
+#include <R_ext/Utils.h>     
+
 // #include "RFsimu.h"
 // never uncomment the following line
 #include "MPP.h"
@@ -201,7 +203,11 @@ void test(double *E, int *N, long double *sigma, int *lb, int *species,
 	     ) {
 	  //  coefficients for antirobust estimators
 	  dummy = sd[c + segsd + repsdseg];
-	  if (dummy<0) {PRINTF("dummy ***** =%e\n",dummy); assert(false);}
+	  if (dummy<0) {
+	    char msg[100];
+	    sprintf(msg, "mpp test: dummy ***** =%e\n", dummy); 
+	    error(msg);
+	  }
           a1 = 0.10 * dummy;    b1 = 0.25 / a1;
 	  //a2 = 0.20 * dummy;    b2 = 0.25 / a2;
           //a3 = 0.30 * dummy;    b3 = 0.25 / a3;
@@ -347,7 +353,7 @@ int mcf_internal(double *E, double *ETEST, int *EBIN,
      */
 {
   int spec[2], row[2], collowtri, Xsumcol, sumcol, d, low, halflb, swap,
-    antiswap, intsqrtn, member, *classes, *sort, ind, intertotal, error, end;
+    antiswap, intsqrtn, member, *classes, *sort, ind, intertotal, err, end;
   long endfor, k, kk, i, j, endfor2, intdummy, Etestseg[2], Etotal, 
     VARtotal, Datatotal, Datatotal1, Etesttotal,
     GAMtotal, meantotal, meantotalseg, meantotalrep, 
@@ -408,7 +414,7 @@ int mcf_internal(double *E, double *ETEST, int *EBIN,
       // standarddev for SD
       ((varExp   = (long double *) calloc(meantotalrep, SLD)) == NULL)
       // expectation of V(ar)
-      ) { error=MPPERR_MEMALLOC; goto ErrorHandling; }
+      ) { err=MPPERR_MEMALLOC; goto ErrorHandling; }
 
   /* 
      we have to estimate the standarddeviation for (mean), Var, SD;
@@ -431,7 +437,7 @@ int mcf_internal(double *E, double *ETEST, int *EBIN,
 	 ((sort = (int*) malloc(sizeof(int) * ROW[i])) == NULL) ||
 	 ((intersum1 = (long double*) malloc(SLD *  rep)) == NULL) ||
 	 ((intersum2 = (long double*) malloc(SLD *  rep)) == NULL)
-	 ) { error=MPPERR_MEMALLOC; goto ErrorHandling; }
+	 ) { err=MPPERR_MEMALLOC; goto ErrorHandling; }
     kk = ROW[i] % intsqrtn;  // the remaining k elements are put to the first k
     //                          classes             
     classes[0] = 0;
@@ -735,7 +741,7 @@ int mcf_internal(double *E, double *ETEST, int *EBIN,
 	    PRINTF("\n ********* %f %f ***\n\n",doubleEBINi, E[i+Etotal]);
 	    PRINTF(" %d: %d  ",i, Etotal);
 	    PRINTF(" %e %e %e\n",mom2[i+Etotal], E[i+Etotal], doubleEBINi);
-	    assert(false);
+	    error("mcf failed");
 	  }
 	  if ((MPP_PRINTLEVEL>5) )       
 	    PRINTF("\n *********  %e %e %f %f ***", 
@@ -882,7 +888,7 @@ ErrorHandling:
   if (pos!=NULL)     free(pos);
   if (intersum1!=NULL)   free(intersum1);
   if (intersum2!=NULL)   free(intersum2);
-  return error;
+  return err;
 }
 
 
@@ -892,7 +898,7 @@ void MCtest(int *repet, double *coord, double *data, int *npoints,
 	    double *bin, int *nbin,
 	    int *Etestposition, int *VARtestposition, int *SQtestposition, 
 	    int *Maxtests, int *nmaxtests, int *MAXtestposition,
-	    int *error, int *additive, int *staticchoice)
+	    int *err, int *additive, int *staticchoice)
 {
     /* repet  : MC repetitions. is usually 99
        coord  : are the fixed coordinates of the mpp (npoints coordinates)
@@ -978,9 +984,9 @@ void MCtest(int *repet, double *coord, double *data, int *npoints,
 	((X      = (double **) malloc(sizeof(double*) * n))==NULL) ||
 	((DATA   = (double **) malloc(sizeof(double*) * n))==NULL) ||
 	((DATA[0]= (double*) malloc(sizeof(double) * *npoints * nn))==NULL) 
-	) { *error=MPPERR_MEMALLOC; goto ErrorHandling; }
+	) { *err=MPPERR_MEMALLOC; goto ErrorHandling; }
   }
-  if ((X[0] = coord)==0) {*error=MPPERR_COORD; goto ErrorHandling;}
+  if ((X[0] = coord)==0) {*err=MPPERR_COORD; goto ErrorHandling;}
   
   // first put the data into DATA, then the simulations ...    
   for (i=0; i<*npoints; i++) { DATA[0][i] = data[i]; }   
@@ -989,7 +995,7 @@ void MCtest(int *repet, double *coord, double *data, int *npoints,
  
 
   /* calculate values and teststatistics */
-  if ((*error = 
+  if ((*err = 
        mcf_internal(E, ETest, Ebin, VAR, VARTest, SQ, SQTest, VARbin,
 		    KMM, KMMbin, GAM, GAMbin, &p, bin, *nbin, *dim, n, 
 		    col, nn, X, DATA, npoints, (bool) *staticchoice))!=0) {
@@ -1060,7 +1066,7 @@ void MCtest(int *repet, double *coord, double *data, int *npoints,
   return;
   
  ErrorHandling:   
-  if (MPP_PRINTLEVEL>0) MPPErrorMessage(*error);
+  if (MPP_PRINTLEVEL>0) MPPErrorMessage(*err);
   if (E!=NULL) free(E);    
   if (ETest!=NULL) free(ETest);   
   if (Ebin!=NULL) free(Ebin);
@@ -1095,7 +1101,7 @@ void mcf(double *E, /* size: rep * n^2 * col * #bins */
 	 int *KMMBIN, /* [sum_i c_i] * [1+sum c_i]/2 * #bins */
 	 double *GAM,/* rep * [sum_i c_i] * [1+sum c_i]/2 * #bins */
 	 int *GAMBIN,/* [sum_i c_i] * [1+sum c_i]/2 * #bins */
-	 int *error, int *PrintLevel,
+	 int *err, int *PrintLevel,
 	 double *p,
 	 double *bin, /*bin[0] MUST contain exactly the origin, bin=(-1,0,....)*/
 	 int *lb, int *dim, int *n, int *col,
@@ -1118,7 +1124,7 @@ void mcf(double *E, /* size: rep * n^2 * col * #bins */
   if ( ((X = (double **) malloc(sizeof(double*) * *n)) == NULL) ||
        ((DATA = (double **) malloc(sizeof(double*) * *n)) == NULL) ||
        ((ROW = (int *) malloc(sizeof(int) * *n)) == NULL) 
-       ) { *error=MPPERR_MEMALLOC; goto ErrorHandling; }
+       ) { *err=MPPERR_MEMALLOC; goto ErrorHandling; }
   for (i=0; i<*n; i++) {
     X[i]    = va_arg(ap, double *);    
     DATA[i] = va_arg(ap, double *);    
@@ -1126,7 +1132,7 @@ void mcf(double *E, /* size: rep * n^2 * col * #bins */
   }
   va_end(ap);
 
-  if ((*error=mcf_internal(E, ETEST, EBIN, VAR, VARTEST, SQ, SQTEST, VARBIN, KMM,
+  if ((*err=mcf_internal(E, ETEST, EBIN, VAR, VARTEST, SQ, SQTEST, VARBIN, KMM,
 			  KMMBIN, GAM, GAMBIN, p, bin, *lb, *dim, *n, *col, *rep,
 			   X, DATA, ROW, (bool) *staticchoice)) !=0)
     { goto ErrorHandling;}
@@ -1134,11 +1140,11 @@ void mcf(double *E, /* size: rep * n^2 * col * #bins */
   free(ROW);
   free(X);
   free(DATA);
-  *error = 0;
+  *err = 0;
   return;
   
  ErrorHandling:
-  if (MPP_PRINTLEVEL>0) MPPErrorMessage(*error);
+  if (MPP_PRINTLEVEL>0) MPPErrorMessage(*err);
   if (ROW!=NULL) free(ROW);
   if (DATA!=NULL) free(DATA);
   if (X!=NULL) free(X);

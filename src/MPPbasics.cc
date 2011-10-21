@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <stdio.h>
 #include <math.h>
-#include <assert.h>
+ 
 #include "MPP.h"
 
 
@@ -34,13 +34,13 @@ int currentmppNr=-1;
 mpp_type mpp_model[MPP_MODELS];
 
 
-void MPPErrorMessage(int error) {
+void MPPErrorMessage(int err) {
   char EM[50];
-  if ((error<800) || (error>=900)) {
+  if ((err<800) || (err>=900)) {
     if (MPP_PRINTLEVEL>8) PRINTF("error returned to calling function in MPP");
     return;
   }
-  switch (error) {
+  switch (err) {
   case MPPERR_NODATA  : strcpy(EM,"No mpp data to be simulated? Hmm"); break;
   case MPPERR_PARAMS  : strcpy(EM,"Number of mpp parameter not correct"); break;
   case MPPERR_POINTS  : strcpy(EM,"Not enough points"); break;  
@@ -48,7 +48,9 @@ void MPPErrorMessage(int error) {
   case MPPERR_MODELNR : strcpy(EM,"specified number of model not allowed");
     break;
   case MPPERR_ : strcpy(EM,""); break;
-  default : PRINTF("** %d\n", error); assert(false);
+  default : 
+    sprintf(EM, "MPPError: %d\n", err);
+    error(EM);
   } 
   PRINTF(" mpp error: %s.\n",EM);
 }
@@ -96,7 +98,9 @@ void InitMPPModelList()
     assert(currentmppNr<MPP_MODELS); 
     currentmppNr++;
 
-  } else assert(currentmppNr==3);
+  } else {
+    assert(currentmppNr==3);
+  }
 }
 
 void GetNrMPPParameters(int *nr, int *n, int *np){

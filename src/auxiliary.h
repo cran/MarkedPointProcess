@@ -2,7 +2,7 @@
 #ifndef AUXILIARY_H
 #define AUXILIARY_H 1
 
-#include "GSLvsR.h"
+#include "basic.h"
 
 // EXTERN void xyInchToPixels(double *xy, double *Pixels);
 EXTERN void RandomPermutation(double *x, int n, double *y 
