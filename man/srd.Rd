@@ -18,7 +18,7 @@ srd.jrssb(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE,
     set. 2 * \code{repet} gives also roughly the number of hours needed
     to do all the simulations!
   }
-  \item{dev}{device, see \command{\link[RandomFields]{Dev}}}
+  \item{dev}{device, see \command{\link{Dev}}}
   \item{PrintLevel}{If \eqn{\code{PrintLevel}>1} some information on
     the course of the algorithm is printed
   }
@@ -88,8 +88,8 @@ srd.jrssb(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE,
   forest.
   \emph{Can. J. Forest Res.} \bold{24}, 1354-1368.
 }
-\author{Martin Schlather, \email{martin.schlather@math.uni-goettingen.de}
-  \url{http://www.stochastik.math.uni-goettingen.de/~schlather}}
+\author{Martin Schlather, \email{schlather@math.uni-mannheim.de}
+  \url{http://ms.math.uni-mannheim.de}}
 
 \seealso{ \command{\link{rfm.test}}, \command{\link{simulateMPP}},
   \code{\link{MarkedPointProcess}}

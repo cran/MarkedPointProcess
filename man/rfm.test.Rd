@@ -10,12 +10,12 @@
 }
 \usage{
 rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
-         MCmodel=list("$", var=NA, scale=NA, list("exponential")),  
+         MCmodel=list("$", var=NA, scale=NA, list("RMexp")),  
          method=NULL,
          bin=c(-1,seq(0,1.2,l=15)), MCregister=1, n.hypo=1000,
          pvalue=c(10, 5, 1), tests="l1 & w3",
          tests.lp=NULL, tests.weight=NULL, Barnard=FALSE,
-         PrintLevel=RFparameters()$Print,...
+         PrintLevel=RFoptions()$general$print,...
          )
 }
 %- maybe also `usage' for other objects documented here.
@@ -32,11 +32,13 @@ rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
   \item{MCrepetitions}{usually 19 or 99; number of simulations that are
     compared with the data}
   \item{MCmodel}{
-    variogram model to be fitted, see
-    \command{\link[RandomFields]{fitvario}}.
+    variogram model to be fitted, see    
+    \command{\link[RandomFields]{RFfit}} for fitting
+    and the Notes of the \link[RandomFields]{Advanced RMmodels} for the model
+    definition used here.
   }
   \item{method}{method used to simulate Gaussian random fields;
-    see \command{\link[RandomFields]{GaussRF}}
+    see \command{\link[RandomFields]{Auxiliary RMmodels}}
   }
   \item{bin}{sequence of increasing bin margins for calculating
     the function E, V, etc in analogy to the binning for variograms;
@@ -59,7 +61,7 @@ rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
   \item{Barnard}{test by Barnard (1963) on the independence of marks}
   \item{PrintLevel}{If zero then no messages are printed. The higher the
   value the more tracing information is given.}
-  \item{...}{any parameter for \command{\link[RandomFields]{fitvario}}
+  \item{...}{any parameter for \command{\link[RandomFields]{RFfit}}
     can be passed,
     except for \code{x}, \code{y}, \code{z}, \code{T}, \code{data},
     \code{model}, \code{param}, \code{mle.methods} and
@@ -287,12 +289,15 @@ rfm.test(coord=NULL, data, normalize=TRUE, MCrepetitions=99,
   Detecting Dependence Between Marks and Locations of Marked Point Processes
   \emph{J. R. Statist. Soc., Ser. B} \bold{66}, 79-83.
 }
-\author{Martin Schlather, \email{martin.schlather@math.uni-goettingen.de}
-  \url{http://www.stochastik.math.uni-goettingen.de/~schlather}}
+\author{Martin Schlather, \email{schlather@math.uni-mannheim.de}
+  \url{http://ms.math.uni-mannheim.de}}
 \seealso{\command{\link{mpp.characteristics}}, \command{\link{simulateMPP}} }
 
 \examples{
-%  library(MarkedPointProcess, lib="~/TMP"); source("/home/schlather/R/MPP/MarkedPointProcess/tests/source.R");source("/home/schlather/R/RF/RandomFields/tests/source.R")
+%  library(MarkedPointProcess, lib="~/TMP");
+%  source("/home/schlather/R/MPP/MarkedPointProcess/tests/source.R");source("/home/schlather/R/RF/RandomFields/tests/source.R")
+
+\dontrun{
 
 data(BITOEK)
 d <- steigerwald
@@ -313,7 +318,9 @@ res$VAR
 res$null.sl
 
 ## should E=const, V=const or SD=const be rejected at the given levels?
-res$reject.null 
+res$reject.null
+
+}
 }
 
 \keyword{spatial}% at least one, from doc/KEYWORDS

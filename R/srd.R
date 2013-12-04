@@ -63,9 +63,9 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     simu.individ.list <- c(100)
   }
   
-  data("BITOEK")
-  RFparameters(Print=PrintLevel, pch=if (PrintLevel<3) "" else "*",
-               TBMCE.force=TRUE)
+  data("BITOEK", envir = environment())
+  RFoptions(printlevel=PrintLevel, pch=if (PrintLevel<3) "" else "*",
+               force=TRUE)
 
   steigerwald.showEfct <- TRUE
   steigerwald.normalize <- TRUE
@@ -190,7 +190,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                                repetitions=1, edgecorrection=0.0, coordrepet=1, 
                                model, register=0,
                                method=(if (is.null(npoints) ||  npoints>500)
-                                       NULL else "direct"), 
+                                       NULL else "Direct"), 
                                gauss.variance=simu.gauss.variance, 
                                
                                normalize=TRUE, 
@@ -300,7 +300,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                         ## nicht von rfm.test uebernommen
                         ps=NULL, 
                         absolute=TRUE, 
-                        # PrintLevel=RFparameters()$Print, 
+                        # PrintLevel=RFoptions()$general$printlevel, 
                         select.lp = "all", 
                         select.weight = "all", 
                         select.extra = FALSE, 
@@ -348,7 +348,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     ##            form (assuming that the errors introduced for different
     ##            values of alpha (gauss.variance) are about the same);
     ##            otherwise it would take too much time)
-    ## PrintLevel : see RFparameters in RandomFields
+    ## PrintLevel : see RFoptions in RandomFields
     ## select.lp, select.weight : see tests.lp and tests.weight in rfm.test
     ##                            (except that the three additional test
     ##                             are not considered)
@@ -948,7 +948,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
     }
     if (!file.exists(filename)) {
       if (PrintLevel>6) cat("\nVariogram analysis\n")
-      zz <- GaussRF(x$coord, grid=FALSE, model=est, n=data.conf.repet)
+      zz <- RFsimulate(x$coord, grid=FALSE, model=est, n=data.conf.repet)
       b <- matrix(ncol=data.conf.repet, nrow=length(bin)-1)
       for (i in 1:data.conf.repet)
         b[,i] <- EmpiricalVariogram(x=x$coord, data=norm(zz[, i]),
@@ -1207,7 +1207,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                   gauss.model=simu.standard.cov,
                   method=if (x * y * i > 500 || gauss.model=="wave" ||
                     MCmodel=="wave")
-                  NULL else "direct"){      
+                  NULL else "Direct"){      
       if (PrintLevel>1)
         cat("G ", gauss.model, "(", MCmodel, ")", " e=", estimate,
             " s=", simulate, " radius=", radius, " R=", R,
@@ -1221,7 +1221,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
       individ <- as.integer(i)
       xlim <- c(0, x)
       ylim <- c(0, y)
-      names <- GetModelNames()
+      names <- RFgetModelNames()
       MCmodel <- names[pmatch(MCmodel, names)]
       gauss.model <- names[pmatch(gauss.model, names)]
       
@@ -1242,7 +1242,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
         ## the local variables of scale and radius are used here!
         model <- function(variance)
           list("+",
-               list("$", var=1.0-variance, scale=2 * radius, list("circ")), 
+               list("$", var=1.0-variance, scale=2*radius, list("RMcircular")), 
                list("$", var=variance, scale=scale, list(gauss.model))
                )
       }
@@ -1816,7 +1816,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
                    "\ndetails.\n")
              } else plotdata(data=data[c(2,3)]) # biondi only
            }, {
-             if (!require(R2Cuba)) next
+             #if (!require(R2Cuba)) next
              theoretical.examples()
            }, {
              try(latex())     

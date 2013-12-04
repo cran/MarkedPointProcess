@@ -1,3 +1,5 @@
-exportPattern("^[^\\.]")
+export(get.mpp.names, splitmodel, simulateMPP, rfm.test,
+       mpp.characteristics, srd.jrssb)
 import(RandomFields)
+import(R2Cuba)
 useDynLib(MarkedPointProcess)

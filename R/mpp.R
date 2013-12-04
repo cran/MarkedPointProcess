@@ -12,7 +12,7 @@
          as.integer(t(as.matrix(expand.grid(c(12,20,14,18,23,27),
                                             c(12,13,21,22,30,31))))), envir=ENV)
   assign(".mpp.nr.maxtests",
-         as.integer(length(get(".mpp.maxtests", env=ENV)) / 2), envir=ENV)
+         as.integer(length(get(".mpp.maxtests", envir=ENV)) / 2), envir=ENV)
   assign(".mpp.digits", 3, envir=ENV)
   assign(".mpp.lpnames", c("max", "l2", "l1", "robust", "anti"), envir=ENV)
   assign(".mpp.weightnames", c("const", "1/sum#", "sqrt(1/sum#)", "1/sumsqrt#",
@@ -21,12 +21,6 @@
 }
 
 .onLoad <- function (lib, pkg) {
-  if (file.exists("/home/schlather/bef/x")) {
-    ## to-do list -- since my surname is rare, the message should 
-    ## appear only on computers I have a login
-    ## cat("To-Do List\n==========\n")
-    
-  }
 }
 
 get.mpp.names <- function() {
@@ -48,12 +42,12 @@ splitmodel <- function(model, trend=NULL) {
   if (missing(model) || (length(model)==0))
     return(list(RF=list(),mpp=list(), mean=NULL, tren=NULL))
   model.names <- get.mpp.names()
-  all.names <- c(model.names, GetModelNames())
+  all.names <- c(model.names, RFgetModelNames(newnames=FALSE))
   stopifnot(is.list(model))
 
-  Print(model, names(model),
-        model[[1]]=="+", is.logical(names(model)[1]==""),
-        (is.character(model[[1]]) && names(model)[1]==""))
+  #Print(model, 
+  #      model[[1]]=="+", is.logical(names(model)[1]==""),
+  #      (is.character(model[[1]]) && names(model)[1]==""))
 
   if (model[[1]]=="+" || (is.character(model[[1]]) &&
                           (is.null(names(model)) || names(model)[1]==""))) {
@@ -62,8 +56,8 @@ splitmodel <- function(model, trend=NULL) {
     RF <- mpp <- list()
     for (i in 1:length(model)) {
       if (is.na(pmatch(model[[i]][[1]], all.names))) {
-#        Print(all.names)
-        stop(paste("model name '", model[[i]][[1]], "' ambiguous", sep=""))
+#      Print(all.names)
+        stop(paste("model name '", model[[i]][[1]], "' ambiguous or unknown", sep=""))
       }
       if (is.na(n <- pmatch(model[[i]][[1]], model.names) - 1)) {
         RF <- c(RF, list(model[[i]]))
@@ -154,7 +148,7 @@ simulateMPP <- function(coordmodel=c("given", "uniform", "Poisson"),
   ##              new model names: nearest neighbour, random coin
   ##
   ## register,
-  ## method     : see GaussRF()
+  ## method     : see Auxiliary RFmodels
   ##
   ## MPP-models
   ## ==========
@@ -164,7 +158,7 @@ simulateMPP <- function(coordmodel=c("given", "uniform", "Poisson"),
   ##                    2nd param : radius of the disk or cone
   ##                    3rd param : height of the disk or cone
 
-  PrintLevel <- RFparameters()$PrintLevel
+  PrintLevel <- RFoptions()$printlevel
   coordmodel <- pmatch(coordmodel, as.character(formals()$coordmodel)[-1])
   switch(coordmodel,
          { # given
@@ -233,11 +227,11 @@ simulateMPP <- function(coordmodel=c("given", "uniform", "Poisson"),
     result[[r]]$data <- matrix(data, ncol=repetitions)[1:act.npoints,,drop=FALSE]
     
     if (length(RF)>0) {
-      rf <- GaussRF(x=result[[r]]$coord,
-                    grid=FALSE,
-                    model=RF,
-                    n=repetitions,
-                    method=method)
+      rf <- RFsimulate(x=result[[r]]$coord,
+                       grid=FALSE,
+                       model=if (is.null(method)) RF else list(method, RF),
+                       n=repetitions,
+                       spConform=FALSE)
       if (is.null(rf)) stop("Error in random field simulation")
 
 #      Print(result[[r]], r, result, result[[r]]$data, rf)
@@ -252,7 +246,7 @@ simulateMPP <- function(coordmodel=c("given", "uniform", "Poisson"),
 
 rfm.test <- function(coord=NULL, data, normalize=TRUE,
                      MCrepetitions=99,  
-                     MCmodel=list("$", var=NA, scale=NA, list("exponential")),
+                     MCmodel=list("$", var=NA, scale=NA, list("RMexp")),
                      method=NULL,
                      bin=c(-1,seq(0,1.2,l=15)),
                      MCregister=1,
@@ -261,18 +255,18 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
                      tests="l1 & w3",
                      tests.lp=NULL, tests.weight=NULL,
                      Barnard=FALSE,
-                     PrintLevel=RFparameters()$Print,
+                     PrintLevel=RFoptions()$general$print,
                      ...
                      )
 {
-  if (any(idx <- pvalue > 50)) {
+ 
+ if (any(idx <- pvalue > 50)) {
     warning("old definition of the pvalue has beccome obsolete. 100 - pvalue is here used instead")
     pvalue <- 100 - pvalue
   }
-  old.rf <- RFparameters()[c("Storing", "PrintLevel")]
-  on.exit({if (!old.rf$Storing) DeleteRegister(MCregister);
-           RFparameters(old.rf)})
-  RFparameters(Storing=TRUE, PrintLevel=PrintLevel)
+
+  on.exit(RFoptions(LIST=RFoptions()))
+  RFoptions(storing=TRUE, printlevel=PrintLevel)
   
   stopifnot(n.hypo>1)
    
@@ -304,7 +298,7 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
   .mpp.maxtests <- .mpp.nr.maxtests <- .mpp.digits <- .mpp.lpnames <-
     .mpp.weightnames <- .mpp.extranames <- NULL
   .basisMPP(environment(NULL))
-  distrNr <- as.integer(pmatch("Gauss", GetDistributionNames()) - 1) 
+  #distrNr <- as.integer(pmatch("Gauss", GetDistributionNames()) - 1) 
   ## maybe others will be allowed in future
   dummy <- .C("GetmppParameters", lnorms=integer(1), weights=integer(1),
                      tests=integer(1), mppmaxchar=integer(1), modelnr=integer(1),
@@ -343,14 +337,15 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
       }
       warning("some tests could not be matched or have been given twice")
     }
-  }
-  
+  }  
   if (!is.null(coord)) {
     data <- list(list(coord=coord,data=data))
   } else {
     if (is.list(data) && !is.null(data$data)) data <- list(data)
   }
 
+  #Print(data)
+  
   data <- lapply(data, function(x) list(coord=x$coord, data=as.matrix(x$data)))
   additive <- length(data)>1 || ncol(data[[1]]$data) > 1  
   lEbinM1 <-  as.integer(if (additive) MCrepetitions + 1 else 1)
@@ -382,21 +377,27 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
       Dist <- as.vector(dist(x))
       ##      this currently ensure that only stationary and isotropic
       ##      models will be allowed in fitvarip
-      d <- Data[idx, i]
+      d <- Data[idx, i, drop=FALSE]
       ld <- length(d)
 
-      est[[i]] <- fitvario(Dist = Dist,
-                           truedim = if (is.matrix(coord)) ncol(coord) else 1,
-                           ##x=x, y=NULL, z=NULL, T=NULL,
-                           data=d, mle.methods="ml",
-                           model=MCmodel, cross.methods=NULL, ...)$ml$model
+     # Print(d, Data, idx, i)
+
+      est[[i]] <- RFfit(distances = Dist,
+                        dim= if (is.matrix(coord)) ncol(coord) else 1,
+                        ##x=x, y=NULL, z=NULL, T=NULL,
+                        data=d, methods="ml",
+                        model=MCmodel, ..., spConform=FALSE)$ml$model
+
+      Print(est[[i]])
       
       if (MCrepetitions>0) {     
         simu <- if (Barnard) {
           d[sample(ld, size=ld * MCrepetitions, replace=TRUE)]
         } else {
-          GaussRF(x=x, grid=FALSE, model=est[[i]],
-                  method=method, register=MCregister, n=MCrepetitions)
+          RFsimulate(x=x, grid=FALSE, spConform=FALSE,
+                     model=if (is.null(method)) est[[i]] else
+                           list(method, est[[i]]),
+                      register=MCregister, n=MCrepetitions)
         }
         storage.mode(simu) <- "double"
        
@@ -443,8 +444,10 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
      
       idx <- !is.na(data[[1]]$data[, 1])          
       x <- data[[r]]$coord[idx, , drop=FALSE]
-      simu.data <- GaussRF(x=x, grid=FALSE, model=est[[1]],
-                           method=method, n=n.hypo, register=MCregister)
+      simu.data <- RFsimulate(x=x, grid=FALSE,
+                              model=if (is.null(method)) est[[1]]
+                                    else list(method, est[[1]]),
+                              n=n.hypo, register=MCregister, spConform=FALSE)
                            
       null.hypo <-
         rfm.test(coord = x,
@@ -525,7 +528,7 @@ mpp.characteristics <- function(...,
                                 show=FALSE, model=NULL, param=NULL,
                                 summarize=TRUE,
                                 xunit="m", yunit="cm", pch=16,
-                                PrintLevel=RFparameters()$Print,
+                                PrintLevel=RFoptions()$general$print,
                                 dev=if (name=="") 2 else FALSE,
                                 rdline=if (is.logical(dev)) NULL else readline,
                                 staticchoice=FALSE){
@@ -567,8 +570,9 @@ mpp.characteristics <- function(...,
   ##     mark variogram!
 
   dummy <- .C("GetmppParameters", lnorms=integer(1), weights=integer(1),
-                     tests=integer(1), mppmaxchar=integer(1), modelnr=integer(1),
-                     PACKAGE="MarkedPointProcess", DUP=FALSE)
+              tests=integer(1), mppmaxchar=integer(1),
+              modelnr=integer(1),
+              PACKAGE="MarkedPointProcess", DUP=FALSE)
   mpp.tests <- dummy$tests
 
   args <- list(...)

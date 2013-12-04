@@ -4,9 +4,8 @@
 \description{
   \command{splitmodel} splits a model given in form of a list
   (the third variant of model definition for random fields, see
-  \command{\link[RandomFields]{CovarianceFct}}) into a random field
-  part and a marked
-  point process part
+  \command{\link[RandomFields]{Advanced RMmodels}} into a random field
+  part and a marked point process part
 }
 \usage{
 splitmodel(model, trend=NULL)
@@ -31,6 +30,9 @@ splitmodel(model, trend=NULL)
     models for the random field part
     can be combined by \code{OP.i="+"} or \code{OP.i="*"}, those for the
     marked point process parts only by \code{OP.i="+"}.
+
+    See the Notes of the \link{Advanced RMmodels} for the model
+    definition used here.
   }
   \item{trend}{
     a trend can be given
@@ -44,8 +46,8 @@ splitmodel(model, trend=NULL)
   is the internal C code for \code{model}.
 }
 
-\author{Martin Schlather, \email{martin.schlather@math.uni-goettingen.de}
-  \url{http://www.stochastik.math.uni-goettingen.de/~schlather}}
+\author{Martin Schlather, \email{schlather@math.uni-mannheim.de}
+  \url{http://ms.math.uni-mannheim.de}}
 \seealso{\command{\link{simulateMPP}} }
 
 \examples{
@@ -53,47 +55,24 @@ splitmodel(model, trend=NULL)
 #### new model definitions ###
 ##############################
 
-str(splitmodel(list("$", var=5, scale=3, list("exp"))))
+str(splitmodel(list("$", var=5, scale=3, list("RMexp"))))
 
 str(splitmodel(list("nearest neighbour", param=4)))
 
 str(splitmodel(list("+",
-                    list("$", var=5, scale=3, list("exp")),
+                    list("$", var=5, scale=3, list("RMexp")),
                     list("nearest neighbour", param=4)
                     )))
 
 str(splitmodel(list("+",
                     list("*",
-                         list("$", var=5, scale=3, list("exp")),
-                         list("$", var=1, scale=2, list("spherical"))
+                         list("$", var=5, scale=3, list("RMexp")),
+                         list("$", var=1, scale=2, list("RMspheric"))
                          ),
                     list("nearest neighbour", param=4),
                     list("random coin", param=c(fct=1, scale=7, height=8))
                     )))
 
-
-##############################
-#### old model definitions ###
-##############################
-
-str(splitmodel(list(list(model="exp", var=5, scale=3))))
-
-str(splitmodel(list(list(model="nearest neighbour", param=4))))
-
-str(splitmodel(list(list(model="exp", var=5, scale=3),
-                    "+",
-                    list(model="nearest neighbour", param=4)
-                    )))
-
-str(splitmodel(list(list(model="exp", var=5, scale=3),
-                    "*",
-                    list(model="spherical", var=1, scale=2),
-                    "+",
-                    list(model="nearest neighbour", param=4),
-                    "+",
-                    list(model="random coin",
-                         param=c(fct=1, scale=7, height=8))
-                    )))
 
 }
 \keyword{spatial}% at least one, from doc/KEYWORDS

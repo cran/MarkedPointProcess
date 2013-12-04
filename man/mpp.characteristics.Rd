@@ -9,7 +9,7 @@
 mpp.characteristics(...,bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
                     show=FALSE, model=NULL, param=NULL, summarize=TRUE,
                     xunit="m", yunit="cm", pch=16,
-                    PrintLevel=RFparameters()$Print,
+                    PrintLevel=RFoptions()$general$print,
                     dev=if (name=="") 2 else FALSE,
                     rdline=if (is.logical(dev)) NULL else readline,
                     staticchoice=FALSE)
@@ -33,9 +33,11 @@ mpp.characteristics(...,bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
   \item{show}{logical; if \code{TRUE} the results are also shown
     graphically }
   \item{model}{the variogram model to compare with the mark variogram; see
-    \command{\link[RandomFields]{CovarianceFct}}}
+    \command{\link[RandomFields]{RMmodels}} and the
+    \link{Advanced RMmodels}.
+  }
   \item{param}{the parameters for the variogram model; see
-    \command{\link[RandomFields]{CovarianceFct}}}
+    \command{\link[RandomFields]{RMmodels}}}
   \item{summarize}{logical; if \code{FALSE} results are for each
     realisation seperately (instead of being averaged over the
     realisations).} 
@@ -49,7 +51,7 @@ mpp.characteristics(...,bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
     a string parameter that gives file or image information
   }
   \item{dev}{the graphical device for the output, see
-    \command{\link[RandomFields]{Dev}}}
+    \command{\link{Dev}}}
   \item{staticchoice}{
     logical. The calculation of some variances requires
     the splitting of the data into group. If \code{staticchoice=FALSE}
@@ -308,8 +310,8 @@ mpp.characteristics(...,bin=NULL, rep=1, p=0.8, name="", normalize=TRUE,
   Schlather, M. (2001) On the second order characteristics of marked
   point processes, \emph{Bernoulli} \bold{7}, 99-117. 
 }
-\author{Martin Schlather, \email{martin.schlather@math.uni-goettingen.de}
-  \url{http://www.stochastik.math.uni-goettingen.de/~schlather}}
+\author{Martin Schlather, \email{schlather@math.uni-mannheim.de}
+  \url{http://ms.math.uni-mannheim.de}}
 \seealso{\command{\link{rfm.test}}, \command{\link{simulateMPP}} }
 
 \examples{

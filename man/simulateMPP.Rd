@@ -55,12 +55,12 @@ simulateMPP(coordmodel=c("given", "uniform", "Poisson"),
   
   \item{register}{the register where intermediate results in the
     Gaussian random field simulation are stored, see
-    \command{\link[RandomFields]{GaussRF}}}
+    \command{\link[RandomFields]{RFoptions}}}
   
   \item{method}{the method by which the Gaussian random field is
     simulated; if \code{is.null(method)} then the method is chosen
-    automatically, see \command{\link[RandomFields]{GaussRF}}
-  }
+    automatically. Otherwise it must be a string containing the
+    name of method, see \link[RandomFields]{Auxiliary RMmodels}}
 
   \item{trend}{
     real value, giving the mean
@@ -96,8 +96,8 @@ simulateMPP(coordmodel=c("given", "uniform", "Poisson"),
   \code{list( list(coord, data), \ldots, list(coord, data) )}
 }
 %\references{}
-\author{Martin Schlather, \email{martin.schlather@math.uni-goettingen.de}
-  \url{http://www.stochastik.math.uni-goettingen.de/~schlather}}
+\author{Martin Schlather, \email{schlather@math.uni-mannheim.de}
+  \url{http://ms.math.uni-mannheim.de}}
 \seealso{\command{\link{get.mpp.names}},
   \command{\link{rfm.test}}, \command{\link{simulateMPP}},
   \command{\link{splitmodel}}, \link{MarkedPointProcess}
@@ -110,7 +110,7 @@ simulateMPP(coordmodel=c("given", "uniform", "Poisson"),
               window=c(xlim=xlim, ylim=c(20, 70)),
               repet=2, coordrepet=4,
               model=list("+",
-                         list("$", var=1, scale=10, list("exp")),
+                         list("$", var=1, scale=10, list("RMexp")),
                          list("nearest neighbour", p=1))
               )
   str(mpp)

@@ -1,6 +1,6 @@
 /* 
  Authors
- Martin Schlather, martin.schlather@math.uni-goettingen.de
+ Martin Schlather, schlather@math.uni-mannheim.de
 
  library for simulation and analysis of marked point processes:
     analysis of mpp
@@ -233,16 +233,16 @@ void test(double *E, int *N, long double *sigma, int *lb, int *species,
 	  X[0] = 0.0;
 
 	  { // besag weights
-	    int segment;
-	    segment = NUMBERWEIGHTS-1;
+	    int segm;
+	    segm = NUMBERWEIGHTS-1;
 	    sumsigma = 1 / sumsigma;
 	    for (i=1; i < *lb; i++) { // 1 not 0!
-	      Weight[segment] = 
+	      Weight[segm] = 
 		(RF_ISNA(sigma[eseg+i])) ? 0 : sumsigma / sigma[eseg+i];
 		/*
 		  berechnung des zaehlers:
 		 */
-	      segment += NUMBERWEIGHTS;
+	      segm += NUMBERWEIGHTS;
 	    }
 	  }
 
@@ -463,14 +463,14 @@ int mcf_internal(double *E, double *ETEST, int *EBIN,
 	  intersum1[intertotal] = intersum2[intertotal] = 0.0;
 	}
 	for (ind=classes[k]; ind<classes[k+1]; ind++){// within each classes 
-	  register double dummy;
+	  register double dummy2;
 	  if (!RF_ISNA(DATA[i][j+sort[ind]])) {// sort[ind]==random permutation
 	    for (Datatotal=meantotal=intertotal=0; meantotal<meantotalrep;
 		 meantotal+=meantotalseg, Datatotal+=ROWcol[i], intertotal++) {
-	      mean[l+meantotal] += (dummy=DATA[i][j+sort[ind]+Datatotal]);  
-	      intersum1[intertotal] += dummy;
-	      standarddev[l+meantotal] += (dummy *= dummy);
-	      intersum2[intertotal] += dummy;	      
+	      mean[l+meantotal] += (dummy2=DATA[i][j+sort[ind]+Datatotal]);  
+	      intersum1[intertotal] += dummy2;
+	      standarddev[l+meantotal] += (dummy2 *= dummy2);
+	      intersum2[intertotal] += dummy2;	      
 	    }
 	    intdummy++;
 	  }
@@ -616,17 +616,17 @@ int mcf_internal(double *E, double *ETEST, int *EBIN,
 		    VARBIN[intdummy]++;
 		    for (Datatotal=VARtotal=0;VARtotal<LBcollowtriN2rep;
 		         VARtotal+=nnLBcollowtri, Datatotal+=ROWcol[spec[swap]]){
-		      register long double dummy;
-		      dummy = (long double) DATA[spec[swap]][seg0+Datatotal] * 
+		      register long double dummy3;
+		      dummy3 = (long double) DATA[spec[swap]][seg0+Datatotal] * 
 			  (long double) DATA[spec[swap]][seg1+Datatotal];
 		      //  !!!!!!!!! not checked yet if it seg0 and seg1 correspond
 		      // to the indices later on in the final calculations
-		      mom22[intdummy+VARtotal] += dummy * dummy;
+		      mom22[intdummy+VARtotal] += dummy3 * dummy3;
 		      mom21[intdummy+VARtotal] += 
-			  dummy * (long double) DATA[spec[swap]][seg0+Datatotal];
+			  dummy3 * (long double) DATA[spec[swap]][seg0+Datatotal];
 		      mom12[intdummy+VARtotal] += 
-			  dummy * (long double) DATA[spec[swap]][seg1+Datatotal];
-		      VAR[intdummy+VARtotal]+= dummy;
+			  dummy3 * (long double) DATA[spec[swap]][seg1+Datatotal];
+		      VAR[intdummy+VARtotal]+= dummy3;
 		    }
 		  }// RF_ISNA
 		  k++;
@@ -764,11 +764,11 @@ int mcf_internal(double *E, double *ETEST, int *EBIN,
 	  for (Etotal = VARtotal = 0; VARtotal < LBcollowtriN2rep; 
 	       Etotal += LBsumcolN, VARtotal += nnLBcollowtri){
 
-	    register long double dummy,ExE, doubleVARBINkk;
+	    register long double dummy2, ExE, doubleVARBINkk;
 	    
 	    doubleVARBINkk = (double) VARBIN[kk];
 	    ExE = E[Eresseg[0]+l+Etotal] * E[Eresseg[0]+k+l+Etotal];
-	    dummy = (VAR[kk+VARtotal] - doubleVARBINkk * ExE) / 
+	    dummy2 = (VAR[kk+VARtotal] - doubleVARBINkk * ExE) / 
 	      (doubleVARBINkk-1.0);
 
 	    // check if multivariate one is ok.!!
@@ -787,25 +787,25 @@ int mcf_internal(double *E, double *ETEST, int *EBIN,
 		    (long double) E[Eresseg[0]+k+l+Etotal] * 
 		    (long double)E[Eresseg[0]+k+l+Etotal] 
 		    - doubleVARBINkk * ExE * ExE) / (doubleVARBINkk-2.0) - 
-		dummy*dummy;
+		dummy2*dummy2;
 	      if ((XX<0)) {
-		if ((XX < - XXtolerance * dummy * dummy) 
+		if ((XX < - XXtolerance * dummy2 * dummy2) 
 		    &&
-		    ((fabs(XX) > XXtolerance)||(fabs(dummy) > XXtolerance))) {
+		    ((fabs(XX) > XXtolerance)||(fabs(dummy2) > XXtolerance))) {
 		  PRINTF("bin %d\n",VARBIN[kk]);
 		  PRINTF(" %e\n", 
-			 (double) ((XX + dummy * dummy) * (doubleVARBINkk-2)));
+			 (double) ((XX + dummy2 * dummy2) * (doubleVARBINkk-2)));
 		  PRINTF(" %4.3f(%4.3f)\n",(double) mom21[kk+VARtotal], 
 			 (double) mom21[kk+VARtotal]);
 		  PRINTF(" [%e %e, %d, %e %e; %e %e]\n", 
 			 (double)mom22[kk+VARtotal], 
 			 (double)VAR[kk+VARtotal], VARBIN[kk], (double) ExE,
-			 (double)mom2[Eresseg[0]+k+l+Etotal],(double)dummy,
+			 (double)mom2[Eresseg[0]+k+l+Etotal],(double)dummy2,
 			 sqrt((VAR[kk+VARtotal]- (double) VARBIN[kk]* ExE ) / 
 			      (doubleVARBINkk-1.0)));
 		  PRINTF("--> %e > %e [%e %e]\n",
-			 (double) XX, (double) (- XXtolerance * dummy * dummy),
-			 (double)XXtolerance, (double) dummy);
+			 (double) XX, (double) (- XXtolerance * dummy2 * dummy2),
+			 (double)XXtolerance, (double) dummy2);
 		  //assert(false);
 		}
 		XX=0;
@@ -815,9 +815,9 @@ int mcf_internal(double *E, double *ETEST, int *EBIN,
 	      mom22[kk+VARtotal] = RF_NAN;
 	    }
 	    if (VARBIN[kk]>=2) { // must be after above if statement !!
-	      VAR[kk+VARtotal]=dummy;
-	      SQ[kk+VARtotal] = sqrt(fabs(dummy));
-	      if(dummy<0) {SQ[kk+VARtotal] = -SQ[kk+VARtotal];}
+	      VAR[kk+VARtotal]=dummy2;
+	      SQ[kk+VARtotal] = sqrt(fabs(dummy2));
+	      if(dummy2<0) {SQ[kk+VARtotal] = -SQ[kk+VARtotal];}
 	    } else {
 	      VAR[kk+VARtotal] = SQ[kk+VARtotal] = RF_NAN;
 	    }
@@ -937,7 +937,7 @@ void MCtest(int *repet, double *coord, double *data, int *npoints,
   int    *GAMbin;
   double *SQ,*SQTest; ///
 
-  double **X, **DATA, *DUMMY;
+  double **X, **DATA;
 
    int nn, i, j, k,
     Epos[NUMBERTESTS], VARpos[NUMBERTESTS],SQpos[NUMBERTESTS],*MAXpos; 
@@ -945,8 +945,7 @@ void MCtest(int *repet, double *coord, double *data, int *npoints,
     
   double p;
   int n, col, endrepet;
-  long simresN; simresN=0;
-
+ 
  /////////////////
   MPP_PRINTLEVEL = *PrintLevel;
   p = 0.7;// p-value for "robust" function in test 
@@ -955,7 +954,6 @@ void MCtest(int *repet, double *coord, double *data, int *npoints,
   ////////////////
   E=ETest=VAR=VARTest=KMM=GAM=SQ=SQTest=NULL;
   X=DATA=NULL;
-  DUMMY=NULL;
   Ebin=VARbin=KMMbin=GAMbin=MAXpos=NULL;
 
   nn = *repet + 1;
