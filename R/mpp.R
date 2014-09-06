@@ -26,7 +26,7 @@
 get.mpp.names <- function() {
   dummy <- .C("GetmppParameters", lnorms=integer(1), weights=integer(1),
                      tests=integer(1), mppmaxchar=integer(1), modelnr=integer(1),
-                     PACKAGE="MarkedPointProcess", DUP=FALSE)
+                     PACKAGE="MarkedPointProcess", DUP=DUPFALSE)
   mpp.models <- dummy$modelnr
   mpp.maxchar <- dummy$mppmaxchar
   l <- NULL;
@@ -64,7 +64,7 @@ splitmodel <- function(model, trend=NULL) {
       } else {
         np <- integer(1)
         .C("GetNrMPPParameters", as.integer(n), as.integer(1), np,
-           PACKAGE="MarkedPointProcess", DUP=FALSE)
+           PACKAGE="MarkedPointProcess", DUP=DUPFALSE)
         if (length(model[[i]]$p)!=np){
 #          Print(model[[i]], model.names, n, length(model[[i]]$p),i,np)
           stop("Number of parameters incorrect")
@@ -107,7 +107,7 @@ splitmodel <- function(model, trend=NULL) {
       n <- n[!is.na(n)] - 1
       np <-  integer(length(n))
       .C("GetNrMPPParameters", as.integer(n), as.integer(length(n)), np,
-         PACKAGE="MarkedPointProcess", DUP=FALSE)
+         PACKAGE="MarkedPointProcess", DUP=DUPFALSE)
       model <- model[index]
       for (i in 1:length(model)) {
         if (length(model[[i]]$p)!=np[i]){
@@ -216,7 +216,7 @@ simulateMPP <- function(coordmodel=c("given", "uniform", "Poisson"),
        as.double(mpp.parameters),
        as.integer(length(mpp.parameters)),
        as.integer(PrintLevel),
-       error, PACKAGE="MarkedPointProcess", DUP=FALSE)
+       error, PACKAGE="MarkedPointProcess", DUP=DUPFALSE)
 
     if (error!=0) stop("Error in simulateMPP ", error)
     ## IMPORTANT! if coordmodel is 2, then actual and physical act.npoints do
@@ -302,7 +302,7 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
   ## maybe others will be allowed in future
   dummy <- .C("GetmppParameters", lnorms=integer(1), weights=integer(1),
                      tests=integer(1), mppmaxchar=integer(1), modelnr=integer(1),
-                     PACKAGE="MarkedPointProcess", DUP=FALSE)
+                     PACKAGE="MarkedPointProcess", DUP=DUPFALSE)
   mpp.tests <- dummy$tests
   mpp.l.norms <- dummy$lnorms
   mpp.weights <- dummy$weights
@@ -427,7 +427,7 @@ rfm.test <- function(coord=NULL, data, normalize=TRUE,
            ##                    28.8.04: rueckgeaendert; CHECK !!!!!
            as.integer(0), # do not copy simulation results & random choice
            ##               in mcf_internal
-           PACKAGE="MarkedPointProcess", DUP=FALSE, NAOK=TRUE
+           PACKAGE="MarkedPointProcess", DUP=DUPFALSE, NAOK=TRUE
            )
           if (error) stop("error ", error)
       } # MCrep > 0
@@ -572,7 +572,7 @@ mpp.characteristics <- function(...,
   dummy <- .C("GetmppParameters", lnorms=integer(1), weights=integer(1),
               tests=integer(1), mppmaxchar=integer(1),
               modelnr=integer(1),
-              PACKAGE="MarkedPointProcess", DUP=FALSE)
+              PACKAGE="MarkedPointProcess", DUP=DUPFALSE)
   mpp.tests <- dummy$tests
 
   args <- list(...)
@@ -658,7 +658,7 @@ mpp.characteristics <- function(...,
   text<-paste('.C("mcf",',
               "E,ETest,Ebin,VAR,VARTest,SQ,SQTest,VARbin,KMM,KMMbin,GAM,GAMbin,",
               "error,PrintLevel,p,bin,nbins,dim,n,col,as.integer(staticchoice),",
-              "rep,", block,"PACKAGE='MarkedPointProcess',DUP=FALSE,NAOK=TRUE)",
+              "rep,", block,"PACKAGE='MarkedPointProcess',DUP=DUPFALSE,NAOK=TRUE)",
               sep="")
   # print(text)
   eval(parse(text=text))

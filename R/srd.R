@@ -166,7 +166,7 @@ srd.jrssb <- function(input=NULL, repet=500, dev=2, PrintLevel=2, readlines=TRUE
   dummy <- .C("GetmppParameters", lnorms=integer(1), weights=integer(1),
                tests=integer(1), mppmaxchar=integer(1), modelnr=integer(1),
                debug=integer(1),
-               PACKAGE="MarkedPointProcess", DUP=FALSE)
+               PACKAGE="MarkedPointProcess", DUP=DUPFALSE)
   mpp.tests <- dummy$tests
   mpp.weights <- dummy$weights
   mpp.weightnames2 <- paste("w", 1:mpp.weights, sep="")

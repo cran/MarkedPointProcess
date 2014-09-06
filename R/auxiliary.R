@@ -155,3 +155,4 @@ LockRemove <- function(file) {
   file.remove(paste(file, lock.ext, sep=""))
 }
 
+DUPFALSE <- FALSE
